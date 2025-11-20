@@ -7,7 +7,7 @@ const RegisterPage: React.FC = () => {
     <div className="register-page">
       <div className="register-card">
         <div className="register-header">
-          <div className="logo-icon">Chat</div>
+          <div className="logo-icon" aria-hidden="true"></div>
           <h1 className="title">VidSync</h1>
           <h2 className="subtitle">Crea tu cuenta</h2>
         </div>

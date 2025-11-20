@@ -19,7 +19,7 @@ const CreateMeetingPage: React.FC = () => {
       {/* HEADER (igual que el dashboard) */}
       <header className="header">
         <div className="logo">
-          <span className="logo-icon">Chat</span>
+          <span className="logo-icon" aria-hidden="true"></span>
           <span className="logo-text">VidSync</span>
         </div>
         <div className="header-actions">

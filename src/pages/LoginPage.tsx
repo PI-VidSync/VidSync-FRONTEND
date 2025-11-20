@@ -7,7 +7,7 @@ const LoginPage: React.FC = () => {
     <div className="login-page">
       <div className="login-card">
         <div className="login-header">
-          <div className="logo-icon">Chat</div>
+          <div className="logo-icon" aria-hidden="true"></div>
           <h1>VidSync</h1>
           <p className="subtitle">Tienes cuenta en VidSync?</p>
           <strong className="title">Ingresa!</strong>

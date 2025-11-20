@@ -9,7 +9,7 @@ const ResetPasswordPage: React.FC = () => {
     <div className="reset-page">
       <div className="reset-card">
         <div className="reset-header">
-          <div className="logo-icon">Chat</div>
+          <div className="logo-icon" aria-hidden="true"></div>
           <h1 className="title">VidSync</h1>
           <h2 className="subtitle">Cambiar contraseña</h2>
         </div>

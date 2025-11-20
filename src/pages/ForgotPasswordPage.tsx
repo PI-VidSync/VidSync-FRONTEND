@@ -7,7 +7,7 @@ const ForgotPasswordPage: React.FC = () => {
     <div className="forgot-page">
       <div className="forgot-card">
         <div className="forgot-header">
-          <div className="logo-icon">Chat</div>
+          <div className="logo-icon" aria-hidden="true"></div>
           <h1 className="title">VidSync</h1>
           <h2 className="subtitle">¿Olvidaste tu contraseña?</h2>
           <p className="description">Recupera el acceso</p>
