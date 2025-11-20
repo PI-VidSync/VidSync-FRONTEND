@@ -1,0 +1,113 @@
+
+.dashboard {
+  min-height: 100vh;
+  background: #00bfa5;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.dashboard-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  z-index: 1000;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.logo-icon { font-size: 2.4rem; }
+.logo-text {
+  font-size: 1.8rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, #00bfa5, #00a08a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+    
+.header-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+.icon-btn:hover { background: #f0f0f0; }
+.icon-btn svg { color: #00bfa5; }
+
+.dashboard-main {
+  padding-top: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 70px);
+}
+
+.cards-container {
+  display: flex;
+  gap: 3rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 1200px;
+}
+
+.dashboard-card {
+  background: white;
+  width: 320px;
+  padding: 2.5rem 2rem;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+  transition: transform 0.3s, box-shadow 0.3s;
+  text-decoration: none;
+  color: inherit;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+}
+
+.card-icon {
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 1.5rem;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-icon.create  { background: #e0f7fa; }
+.card-icon.join    { background: #e8f5e8; }
+.card-icon.profile { background: #e3f2fd; }
+
+.card-icon svg { color: #00bfa5; }
+
+.dashboard-card h3 {
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.dashboard-card p {
+  font-size: 0.95rem;
+  color: #666;
+  line-height: 1.5;
+}
