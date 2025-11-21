@@ -21,9 +21,9 @@ body {
 /* ======= LANDING ======= */
 .landing {
   min-height: 100vh;
-  background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+  background: #007f8c; /* flat, single color */
   font-family: "Segoe UI", sans-serif;
-  color: #333;
+  color: #fff;
 }
 
 /* ======= HEADER ======= */
@@ -42,46 +42,9 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 1.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
+/* The shared header component (`src/components/Header.tsx`) provides header styling.
+  Remove the old page-specific fixed green header so the shared header can be used. */
 }
-
-.logo {
-  display: flex;
-  align-items: center;
-}
-
-.logo-icon {
-  font-size: 2.2rem;
-  margin-right: 0.5rem;
-}
-
-.logo-text {
-  color: white;
-  font-size: 1.8rem;
-  font-weight: 700;
-}
-
-.header-buttons {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.header-buttons .btn-login {
-  color: white;
-  border: 2px solid white;
-  padding: 0.6rem 1.8rem;
-  border-radius: 30px;
-  text-decoration: none;
-  font-weight: 600;
-  transition: 0.3s;
-}
-
 .header-buttons .btn-login:hover {
   background: rgba(255, 255, 255, 0.2);
 }
@@ -106,11 +69,14 @@ body {
     flex-direction: column;
     text-align: center;
     padding: 1rem 1.5rem;
+    position: static;
   }
   .logo-text {
     font-size: 1.6rem;
   }
   .header-buttons {
+    position: static;
+    transform: none;
     margin-top: 0.5rem;
   }
   .btn-login,
@@ -138,7 +104,8 @@ body {
 /* ======= HERO ======= */
 .hero {
   text-align: center;
-  padding: 150px 1.5rem 80px;
+  /* leave extra top padding to account for the home header height */
+  padding: 120px 1.5rem 80px;
 }
 
 .hero-content {
@@ -148,13 +115,13 @@ body {
 
 .hero h1 {
   font-size: 3.8rem;
-  color: #004d40;
+  color: #ffffff;
   margin-bottom: 1.5rem;
 }
 
 .hero p {
   font-size: 1.35rem;
-  color: #004d40;
+  color: rgba(255,255,255,0.9);
   line-height: 1.7;
   margin-bottom: 3rem;
 }
@@ -195,24 +162,29 @@ body {
   width: 380px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   text-align: left;
+  color: #111; /* ensure text inside white cards is readable */
 }
 
 .card h3 {
-  color: #00695c;
+  color: #111;
   font-size: 1.6rem;
   margin-bottom: 1rem;
 }
 
+.card p {
+  color: #111;
+}
+
 /* ======= SITEMAP ======= */
 .sitemap {
-  background: white;
+  background: #007f8c; /* same flat color as landing */
   padding: 5rem 1.5rem;
   text-align: center;
 }
 
 .sitemap h2 {
   font-size: 2.5rem;
-  color: #004d40;
+  color: #ffffff;
   margin-bottom: 3rem;
 }
 
@@ -225,7 +197,7 @@ body {
 }
 
 .col h4 {
-  color: #00695c;
+  color: rgba(255,255,255,0.95);
   font-size: 1.4rem;
   margin-bottom: 1.2rem;
 }
@@ -238,13 +210,13 @@ body {
 
 .col li {
   margin: 0.8rem 0;
-  color: #444;
+  color: rgba(255,255,255,0.9);
 }
 
 /* ======= FOOTER ======= */
 .footer {
-  background: #004d40;
-  color: #ccc;
+  background: #007f8c; /* same flat color as landing */
+  color: #fff;
   text-align: center;
   padding: 2rem;
   font-size: 0.95rem;

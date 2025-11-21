@@ -1,0 +1,65 @@
+.home-header {
+  background: #ffffff; /* header background now white */
+  color: #00695c;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  z-index: 1100;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.home-header-inner {
+  /* span full width so the logo can sit at the far left of the viewport */
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  height: 100%;
+}
+
+.home-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  /* ensure logo sits leftmost */
+  margin-left: 0;
+}
+
+.home-logo-img { height: 36px; display:inline-block; }
+.home-logo-text { color: #fff; font-weight:700; font-size:1.05rem; }
+
+/* Centered login/register area */
+.home-header-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-header .btn {
+  color: #00695c;
+  border: 1px solid rgba(0,105,92,0.14);
+  padding: 8px 12px;
+  border-radius: 24px;
+  text-decoration: none;
+  background: transparent;
+}
+
+.home-header .btn-register { background: #00695c; color: #fff; font-weight:700; border-color: #00695c; }
+.home-header .btn-login { background: transparent; color: #00695c; }
+.home-header .btn-login:hover { background: rgba(0,105,92,0.06); }
+
+@media (max-width: 768px) {
+  .home-header-center { position: static; transform:none; margin-left: auto; }
+}
