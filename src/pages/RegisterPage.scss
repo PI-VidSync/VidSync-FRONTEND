@@ -23,6 +23,15 @@
   margin-bottom: 0.5rem;
 }
 
+/* Ocultar el logo vacío solo en la página de registro para eliminar espacio extra */
+.register-header .logo-icon {
+  display: none;
+}
+
+.register-header .title {
+  margin-top: 0;
+}
+
 .title {
   font-size: 2.4rem;
   color: #00bfa5;
@@ -61,6 +70,25 @@
 .register-form input:focus {
   outline: none;
   border-color: #00bfa5;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.eye-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #666;
+  display: flex;
+  align-items: center;
+}
+
+.eye-icon svg {
+  display: block;
 }
 
 .password-strength {

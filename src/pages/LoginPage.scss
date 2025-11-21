@@ -23,6 +23,10 @@
   margin-bottom: 0.5rem;
 }
 
+/* Hide logo placeholder in login header to remove extra space */
+.login-header .logo-icon { display: none; }
+.login-header h1 { margin-top: 0; }
+
 .login-header h1 {
   font-size: 2.4rem;
   color: #00bfa5;
@@ -103,6 +107,27 @@
   outline: none;
   border-color: #00bfa5;
 }
+
+.input-wrapper { position: relative; margin-bottom: 1.75rem; }
+.input-wrapper .input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+}
+.input-wrapper input { padding-left: 44px; padding-right: 44px; }
+.eye-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #666;
+  display: flex;
+  align-items: center;
+}
+.eye-icon svg { display: block; }
 
 .form-options {
   display: flex;
