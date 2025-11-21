@@ -8,6 +8,12 @@ const Header: React.FC = () => {
   const navigate = useNavigate();
   const [imgLoaded, setImgLoaded] = useState(false);
 
+  const displayName = auth.user
+    ? ((auth.user.firstName || auth.user.lastName)
+        ? `${auth.user.firstName ?? ""} ${auth.user.lastName ?? ""}`.trim()
+        : auth.user.email)
+    : null;
+
   const handleLogout = () => {
     auth.logout();
     navigate("/login");
@@ -35,7 +41,7 @@ const Header: React.FC = () => {
       <div className="header-right">
         {auth.isAuthenticated ? (
           <>
-            <div className="user-email">{auth.user?.email}</div>
+            <div className="user-email">{displayName}</div>
             <button onClick={handleLogout} className="btn-logout">Cerrar sesión</button>
             <Link to="/profile" className="profile-button" aria-label="Perfil">
               <div className="profile-avatar" />

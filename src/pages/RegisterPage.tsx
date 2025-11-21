@@ -35,7 +35,11 @@ const RegisterPage: React.FC = () => {
     // Aquí puedes añadir la lógica real de registro (API)
     // Simulamos registro + login automático
     auth.login(email, password).then((ok) => {
-      if (ok) navigate("/dashboard");
+      if (ok) {
+        // store the profile info in the auth context so header shows name
+        auth.updateProfile({ firstName, lastName, age });
+        navigate("/dashboard");
+      }
     });
   };
 
