@@ -73,6 +73,50 @@
   color: #666;
 }
 
+.criteria-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.criteria-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.95rem;
+  color: #888;
+}
+
+.criteria-item::before {
+  content: "\25CB"; /* circle */
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  text-align: center;
+  line-height: 18px;
+  font-size: 12px;
+  color: #ccc;
+}
+
+.criteria-item.valid {
+  color: #1e7e34;
+}
+.criteria-item.valid::before {
+  content: "\2713"; /* check */
+  color: #1e7e34;
+}
+
+.criteria-item.invalid {
+  color: #b02a37;
+}
+.criteria-item.invalid::before {
+  content: "\00D7"; /* x */
+  color: #b02a37;
+}
+
 .btn-register-main {
   background: #00bfa5;
   color: white;
