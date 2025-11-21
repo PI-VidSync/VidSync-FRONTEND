@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./LoginPage.scss";
 import { useAuth } from "../auth/AuthContext";
+import { loginWithGoogle, loginWithFacebook } from "../service/firebase/login";
 
 const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -9,6 +10,56 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState("");
   const auth = useAuth();
   const navigate = useNavigate();
+
+  async function handleGoogle() {
+    try {
+      const user = await loginWithGoogle();
+
+      console.log("User:", user);
+
+      const token = await user.getIdToken();
+
+      console.log("Token:", token);
+
+      const res = await fetch("http://localhost:3001/api/auth/verify-token", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+      console.log("Backend response:", data);
+
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+
+  async function handleFacebook() {
+    try {
+      const user = await loginWithFacebook();
+
+      console.log("User:", user);
+
+      const token = await user.getIdToken();
+
+      console.log("Token:", token);
+
+      const res = await fetch("http://localhost:3001/api/auth/verify-token", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+      console.log("Backend response:", data);
+
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,14 +78,14 @@ const LoginPage: React.FC = () => {
         </div>
 
         <div className="social-buttons">
-          <button className="btn-facebook">
+          <button className="btn-facebook" onClick={handleFacebook}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
               <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385h-3.047v-3.47h3.047v-2.648c0-3.007 1.791-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953h-1.512c-1.491 0-1.956.925-1.956 1.874v2.255h3.328l-.532 3.47h-2.796v8.385c5.737-.9 10.125-5.864 10.125-11.854z" />
             </svg>
             Ingresar con Facebook
           </button>
 
-          <button className="btn-google">
+          <button className="btn-google" onClick={handleGoogle}>
             <svg width="20" height="20" viewBox="0 0 24 24">
               <path
                 fill="#4285F4"
@@ -54,16 +105,6 @@ const LoginPage: React.FC = () => {
               />
             </svg>
             Ingresar con Google
-          </button>
-
-          <button className="btn-microsoft">
-            <svg width="20" height="20" viewBox="0 0 23 23">
-              <path fill="#f25022" d="M0 0h11v11H0z" />
-              <path fill="#7fba00" d="M12 0h11v11H12z" />
-              <path fill="#00a4ef" d="M0 12h11v11H0z" />
-              <path fill="#ffb900" d="M12 12h11v11H12z" />
-            </svg>
-            Ingresar con Microsoft
           </button>
         </div>
 
