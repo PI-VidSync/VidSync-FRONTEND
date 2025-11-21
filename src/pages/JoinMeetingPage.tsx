@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import Header from "../components/Header";
 import "./JoinMeetingPage.scss";
 
 const JoinMeetingPage: React.FC = () => {
@@ -15,21 +16,7 @@ const JoinMeetingPage: React.FC = () => {
 
   return (
     <div className="join-meeting">
-      {/* HEADER (igual que en las otras páginas) */}
-      <header className="header">
-        <Link to="/" className="logo">
-          <span className="logo-icon"></span>
-          <span className="logo-text">VidSync</span>
-        </Link>
-        <div className="header-actions">
-          <button className="icon-btn">
-            <svg /* notificaciones */ />
-          </button>
-          <button className="icon-btn">
-            <svg /* calendario */ />
-          </button>
-        </div>
-      </header>
+      <Header />
 
       {/* CONTENIDO */}
       <main className="main-content">

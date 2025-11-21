@@ -1,15 +1,27 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./LoginPage.scss";
+import { useAuth } from "../auth/AuthContext";
 
 const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const auth = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const ok = await auth.login(email, password);
+    if (ok) navigate("/dashboard");
+  };
+
   return (
     <div className="login-page">
       <div className="login-card">
         <div className="login-header">
           <div className="logo-icon" aria-hidden="true"></div>
-          <h1>VidSync</h1>
+          <img src="/logo.png" alt="VidSync" className="auth-logo" />
           <p className="subtitle">Tienes cuenta en VidSync?</p>
           <strong className="title">Ingresa!</strong>
         </div>
@@ -59,7 +71,7 @@ const LoginPage: React.FC = () => {
           <span>o</span>
         </div>
 
-        <form className="login-form">
+        <form className="login-form" onSubmit={handleSubmit}>
           <div className="input-wrapper">
             <svg
               className="input-icon"
@@ -73,7 +85,7 @@ const LoginPage: React.FC = () => {
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
               <polyline points="22,6 12,13 2,6"></polyline>
             </svg>
-            <input type="email" placeholder="Email" required />
+            <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Email" required />
           </div>
 
           <div className="input-wrapper">
@@ -89,8 +101,8 @@ const LoginPage: React.FC = () => {
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
             </svg>
-            <input type={showPassword ? "text" : "password"} placeholder="Contraseña" required />
-            <span className="eye-icon" onClick={() => setShowPassword(!showPassword)}>
+            <input value={password} onChange={(e) => setPassword(e.target.value)} type={showPassword ? "text" : "password"} placeholder="Contraseña" required />
+            <span className="eye-icon" onClick={() => setShowPassword(!showPassword)} aria-hidden={false} aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}>
               {showPassword ? (
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>

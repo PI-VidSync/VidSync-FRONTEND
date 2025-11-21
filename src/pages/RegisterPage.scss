@@ -1,6 +1,6 @@
 .register-page {
   min-height: 100vh;
-  background: #00bfa5;
+  background: linear-gradient(135deg, #0d9aa9 0%, #007f8c 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -16,6 +16,39 @@
   max-width: 460px;
   box-shadow: 0 20px 50px rgba(0,0,0,0.2);
   text-align: center;
+}
+
+/* Edit profile specific tweaks */
+.edit-profile-card {
+  padding: 2.2rem 2rem;
+  max-width: 480px;
+}
+
+.register-header .edit-page-logo {
+  width: 138px; /* increased another 20% (≈ +20% from 115px) */
+  height: auto;
+  display: block;
+  margin: 0 auto 6px;
+}
+
+.register-header .auth-logo {
+  width: 161px; /* increased ~40% from 115px */
+  height: auto;
+  display: block;
+  margin: 0 auto 8px;
+}
+
+/* Reduce vertical spacing between stacked password fields in edit form */
+.edit-profile-card .register-form {
+  gap: 0.9rem; /* slightly tighter */
+}
+
+.edit-profile-card .input-wrapper {
+  margin-bottom: 0; /* rely on gap */
+}
+
+.edit-profile-card .login-link {
+  margin: 0.6rem 0 0.2rem;
 }
 
 .logo-icon {
@@ -50,6 +83,11 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+/* Ensure input-wrapper inside register form does not add extra margins (override global rules) */
+.register-card .register-form .input-wrapper {
+  margin: 0; /* rely on .register-form gap for spacing */
 }
 
 .form-row {

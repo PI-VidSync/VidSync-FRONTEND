@@ -1,25 +1,23 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import "./HomePage.scss";
+import HomeHeader from "../components/HomeHeader";
+import { useAuth } from "../auth/AuthContext";
 
 const HomePage = () => {
+  const auth = useAuth();
+  const navigate = useNavigate();
+
+  const handleStart = () => {
+    if (auth.isAuthenticated) navigate("/dashboard");
+    else navigate("/login");
+  };
+
   return (
     <div className="landing">
 
-      {/* HEADER */}
-      <header className="header">
-        <div className="header-container container">
-          <div className="logo">
-            <span className="logo-icon">💬</span>
-            <span className="logo-text">VidSync</span>
-          </div>
-
-          <div className="header-buttons">
-            <Link to="/login" className="btn-login">Iniciar sesión</Link>
-            <Link to="/register" className="btn-register">Regístrate</Link>
-          </div>
-        </div>
-      </header>
+      {/* Home-only header */}
+      <HomeHeader />
 
       {/* HERO */}
       <section className="hero">
@@ -29,7 +27,7 @@ const HomePage = () => {
             <p>
               Una plataforma moderna para videoconferencias eficientes. Conéctate, colabora y comunica tus ideas con nuestra interfaz intuitiva y potentes herramientas de comunicación.
             </p>
-            <Link to="/create-meeting" className="btn-start">Empezar →</Link>
+            <button type="button" onClick={handleStart} className="btn-start">Empezar →</button>
           </div>
         </div>
       </section>

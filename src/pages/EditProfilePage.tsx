@@ -1,21 +1,20 @@
 import React, { useState, useMemo } from "react";
-import { useAuth } from "../auth/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { useAuth } from "../auth/AuthContext";
 import "./RegisterPage.scss";
 
-const RegisterPage: React.FC = () => {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [age, setAge] = useState<string | number>("");
+const EditProfilePage: React.FC = () => {
+  const auth = useAuth();
+  const navigate = useNavigate();
+
+  const [firstName, setFirstName] = useState(auth.user?.firstName ?? "");
+  const [lastName, setLastName] = useState(auth.user?.lastName ?? "");
+  const [email, setEmail] = useState(auth.user?.email ?? "");
+  const [age, setAge] = useState<string | number>(auth.user?.age ?? "");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-
-  const auth = useAuth();
-  const navigate = useNavigate();
 
   const checks = useMemo(() => {
     return {
@@ -31,21 +30,20 @@ const RegisterPage: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!allValid) return;
-    // Aquí puedes añadir la lógica real de registro (API)
-    // Simulamos registro + login automático
-    auth.login(email, password).then((ok) => {
-      if (ok) navigate("/dashboard");
-    });
+    // If user filled password fields, validate they pass checks
+    if ((password || confirm) && !allValid) return;
+    // Update local auth profile (in a real app call backend API)
+    auth.updateProfile({ email, firstName, lastName, age });
+    // Note: we don't persist password in this simulated example
+    navigate("/profile");
   };
 
   return (
     <div className="register-page">
-      <div className="register-card">
+      <div className="register-card edit-profile-card">
         <div className="register-header">
-          <div className="logo-icon" aria-hidden="true"></div>
-          <img src="/logo.png" alt="VidSync" className="auth-logo" />
-          <h2 className="subtitle">Crea tu cuenta</h2>
+          <img src="/logo.png" alt="VidSync" className="edit-page-logo" />
+          <h1 className="title">Editar perfil</h1>
         </div>
 
         <form className="register-form" onSubmit={handleSubmit}>
@@ -56,7 +54,7 @@ const RegisterPage: React.FC = () => {
 
           <div className="form-row">
             <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Correo electrónico" required />
-            <input value={age} onChange={(e) => setAge(e.target.value)} type="number" placeholder="Edad" required />
+            <input value={age} onChange={(e) => setAge(e.target.value)} type="number" placeholder="Edad" />
           </div>
 
           <div className="input-wrapper">
@@ -64,8 +62,7 @@ const RegisterPage: React.FC = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               type={showPassword ? "text" : "password"}
-              placeholder="Contraseña"
-              required
+              placeholder="Contraseña (si deseas cambiarla)"
             />
             <span className="eye-icon" onClick={() => setShowPassword(!showPassword)}>
               {showPassword ? (
@@ -88,7 +85,6 @@ const RegisterPage: React.FC = () => {
               onChange={(e) => setConfirm(e.target.value)}
               type={showConfirm ? "text" : "password"}
               placeholder="Confirmar contraseña"
-              required
             />
             <span className="eye-icon" onClick={() => setShowConfirm(!showConfirm)}>
               {showConfirm ? (
@@ -115,21 +111,19 @@ const RegisterPage: React.FC = () => {
             </ul>
           </div>
 
-          <button type="submit" className="btn-register-main" disabled={!allValid}>
-            Crear cuenta
+          <button type="submit" className="btn-register-main" disabled={(password || confirm) ? !allValid : false}>
+            Guardar cambios
           </button>
+
+          <p className="login-link">
+            <a onClick={() => navigate(-1)} style={{ cursor: "pointer" }}>
+              Cancelar
+            </a>
+          </p>
         </form>
-
-        <p className="login-link">
-          ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
-        </p>
-
-        <p className="terms">
-          Al continuar, aceptas las <a href="#">Condiciones del Servicio</a> de VidSync y su <a href="#">Política de Privacidad</a>.
-        </p>
       </div>
     </div>
   );
 };
 
-export default RegisterPage;
+export default EditProfilePage;

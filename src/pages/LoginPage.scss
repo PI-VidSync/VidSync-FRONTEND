@@ -1,6 +1,6 @@
 .login-page {
   min-height: 100vh;
-  background: #00bfa5;
+  background: linear-gradient(135deg, #0d9aa9 0%, #007f8c 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -32,6 +32,13 @@
   color: #00bfa5;
   margin: 0.4rem 0;
   font-weight: 700;
+}
+
+.login-header .auth-logo {
+  width: 161px; /* increased ~40% from 115px */
+  height: auto;
+  display: block;
+  margin: 0 auto 8px;
 }
 
 .subtitle {

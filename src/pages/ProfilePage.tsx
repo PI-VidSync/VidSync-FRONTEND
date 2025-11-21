@@ -1,23 +1,16 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./ProfilePage.scss";
+import Header from "../components/Header";
+import { useAuth } from "../auth/AuthContext";
 
 const ProfilePage: React.FC = () => {
+  const navigate = useNavigate();
+  const auth = useAuth();
+
   return (
     <div className="profile-page">
-      {/* HEADER */}
-      <header className="profile-header">
-        <Link to="/" className="logo">
-          <span className="logo-icon"></span>
-          <span className="logo-text">VidSync</span>
-        </Link>
-        <div className="header-actions">
-          <button className="icon-btn">
-            
-            
-          </button>
-        </div>
-      </header>
+      <Header />
 
       <main className="profile-content">
         <div className="profile-card">
@@ -31,10 +24,10 @@ const ProfilePage: React.FC = () => {
               
             </div>
             <div className="user-details">
-              <h2>Usuario Apellido</h2>
-              <p>usuario.apellido@email.com</p>
+              <h2>{auth.user?.firstName ?? "Usuario"} {auth.user?.lastName ?? ""}</h2>
+              <p>{auth.user?.email ?? "usuario.apellido@email.com"}</p>
             </div>
-            <button className="edit-btn">Editar Perfil</button>
+            <button className="edit-btn" onClick={() => navigate('/profile/edit')}>Editar Perfil</button>
           </div>
 
           {/* Campos del perfil */}
