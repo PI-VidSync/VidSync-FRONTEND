@@ -14,11 +14,13 @@ import HomePage from './pages/HomePage';
 
 import { AuthProvider } from './auth/AuthContext';
 import ProtectedRoute from './components/routes/ProtectedRoute';
+import { ToastContainer } from './components/ui/toast';
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <ToastContainer />
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />

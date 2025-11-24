@@ -1,10 +1,5 @@
-import { getIdToken } from "../firebase/token";
+import { useRequest, useRequestHeader } from "../../hooks/useApi";
 
-const token = await getIdToken();
-
-const res = await fetch("https://tu-render.com/api/auth/verify-token", {
-  method: "POST",
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-});
+export const verifyToken = async (token: string) => {
+  return useRequestHeader("/verify-token", "POST", { "Authorization": `Bearer ${token}` });
+}
