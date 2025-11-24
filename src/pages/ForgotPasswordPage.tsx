@@ -1,47 +1,95 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { z } from "zod";
+import { useToast } from "../hooks/useToast";
 import "./ForgotPasswordPage.scss";
+import { Mail } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { FormField } from "../components/ui/input";
+
+const forgotPasswordSchema = z.object({
+  email: z
+    .string()
+    .min(1, "El email es requerido")
+    .email("Ingresa un email válido"),
+});
+
+type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
 const ForgotPasswordPage: React.FC = () => {
+  const toast = useToast();
+  const [loading, setLoading] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<ForgotPasswordFormData>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: {
+      email: "",
+    },
+  });
+
+  const onSubmit = async (data: ForgotPasswordFormData) => {
+    setLoading(true);
+    try {
+      const validatedData = forgotPasswordSchema.parse(data);
+      console.log("Datos validados:", validatedData);
+
+      toast.success("¡Enlace de recuperación enviado! Revisa tu correo.");
+      // navigate("/login");
+
+    } catch (error) {
+      console.error(typeof error);
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Error al enviar el enlace. Intenta de nuevo");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="forgot-page">
-      <div className="forgot-card">
+    <div className="full-view">
+      <div className="card forgot-card">
         <div className="forgot-header">
-          <div className="logo-icon" aria-hidden="true"></div>
-          <h1 className="title">VidSync</h1>
-          <h2 className="subtitle">¿Olvidaste tu contraseña?</h2>
-          <p className="description">Recupera el acceso</p>
+          <img src="/logo.png" alt="VidSync" className="auth-logo" />
+          <p className="subtitle">
+            ¿Olvidaste tu contraseña? <br /> 
+            Recupera el acceso a tu cuenta
+          </p>
         </div>
 
-        <form className="forgot-form">
-          <label>Correo electrónico</label>
-          <input
+        <form className="forgot-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+          <FormField
+            label="Correo electrónico"
             type="email"
-            placeholder="tu@correo.com"
-            defaultValue=""
-            required
+            register={register("email")}
+            error={errors.email}
+            icon={<Mail size={20} />}
           />
 
-          <button type="submit" className="btn-recovery">
-            Enviar enlace de recuperación
+          <button
+            type="submit"
+            className="btn btn-primary btn-flex"
+            disabled={loading || isSubmitting}
+          >
+            {loading ? "Enviando..." : "Enviar enlace de recuperación"}
           </button>
         </form>
 
-        <div className="divider">
-          <span>o</span>
-        </div>
+        <p className="info-text">
+          Te enviaremos un enlace para restablecer tu contraseña. <br />
+          Revisa la bandeja de entrada y spam.
+        </p>
 
-        <Link to="/login" className="back-link">
+        <Link to="/login">
           Volver al inicio de sesión
         </Link>
-
-        <p className="info-text">
-          Te enviaremos un enlace para restablecer tu contraseña, revisa la bandeja de entrada y spam.
-        </p>
-
-        <p className="terms">
-          Al continuar, aceptas las <a href="#">Condiciones de uso</a> de Canva. Consulta nuestra <a href="#">Política de privacidad</a>.
-        </p>
       </div>
     </div>
   );

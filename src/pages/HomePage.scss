@@ -1,223 +1,115 @@
-/* FIX GLOBAL */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html, body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  overflow-x: hidden;
-}
-
-body {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
-  line-height: 1.6;
-}
-
-/* ======= LANDING ======= */
-.landing {
-  min-height: 100vh;
-  background: #007f8c; /* flat, single color */
-  font-family: "Segoe UI", sans-serif;
-  color: #fff;
-}
-
-/* ======= HEADER ======= */
-.header {
-  background: #00695c;
-  padding: 1.2rem 0;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.header-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-/* The shared header component (`src/components/Header.tsx`) provides header styling.
-  Remove the old page-specific fixed green header so the shared header can be used. */
-}
-.header-buttons .btn-login:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.header-buttons .btn-register {
-  background: white;
-  color: #00695c;
-  padding: 0.6rem 2rem;
-  border-radius: 30px;
-  text-decoration: none;
-  font-weight: 700;
-  transition: 0.3s;
-}
-
-.header-buttons .btn-register:hover {
-  background: #f0f0f0;
-}
-
-/* RESPONSIVO HEADER */
-@media (max-width: 768px) {
-  .header-container {
-    flex-direction: column;
-    text-align: center;
-    padding: 1rem 1.5rem;
-    position: static;
-  }
-  .logo-text {
-    font-size: 1.6rem;
-  }
-  .header-buttons {
-    position: static;
-    transform: none;
-    margin-top: 0.5rem;
-  }
-  .btn-login,
-  .btn-register {
-    font-size: 0.95rem;
-    padding: 0.7rem 1.5rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .logo-icon {
-    font-size: 1.9rem;
-  }
-  .logo-text {
-    font-size: 1.5rem;
-  }
-  .btn-login,
-  .btn-register {
-    width: 100%;
-    max-width: 160px;
-    text-align: center;
-  }
-}
-
-/* ======= HERO ======= */
-.hero {
-  text-align: center;
-  /* leave extra top padding to account for the home header height */
-  padding: 120px 1.5rem 80px;
-}
-
+// Hero content
 .hero-content {
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.hero h1 {
-  font-size: 3.8rem;
-  color: #ffffff;
-  margin-bottom: 1.5rem;
-}
-
-.hero p {
-  font-size: 1.35rem;
-  color: rgba(255,255,255,0.9);
-  line-height: 1.7;
-  margin-bottom: 3rem;
-}
-
-.btn-start {
-  background: #00695c;
-  color: white;
-  padding: 1rem 3rem;
-  border-radius: 50px;
-  font-size: 1.4rem;
-  font-weight: bold;
-  text-decoration: none;
-  transition: 0.3s;
-}
-
-.btn-start:hover {
-  background: #004d40;
-}
-
-/* ======= CARDS ======= */
-.cards {
-  padding: 3rem 1.5rem;
-}
-
-.cards-inner {
+  min-height: 80vh;
+  padding-block: 2rem;
+  margin: auto;
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  gap: 3rem;
-  flex-wrap: wrap;
-  max-width: 1200px;
-  margin: 0 auto;
+  gap: 1.5rem;
+
+  img {
+    height: 100px;
+    padding: 1.2rem;
+    border-radius: 12px;
+    background-color: white;
+  }
+
+  h1 {
+    font-size: 3.2rem;
+    text-shadow: 0 4px 1px rgba(0, 0, 0, 0.25);
+  }
+
+  p {
+    font-size: 1.2rem;
+    text-align: center;
+    color: #fff;
+  }
+
+  button {
+    font-size: 1.4rem;
+    padding: 0.6rem 1.2rem;
+  }
 }
 
-.card {
-  background: white;
-  padding: 2.5rem;
-  border-radius: 20px;
-  width: 380px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  text-align: left;
-  color: #111; /* ensure text inside white cards is readable */
+// Cards 
+.cards-section {
+  min-height: 50vh;
+  display: flex;
+  padding-block: 2rem;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+
+  .card {
+    width: 50%;
+    padding: 1.2rem;
+    border-radius: 12px;
+    background-color: white;
+    box-shadow: 0 4px 1px rgba(0, 0, 0, 0.25);
+  }
+
+  @media (max-width: 768px) {
+    .card {
+      width: 100%;
+    }
+  }
 }
 
-.card h3 {
-  color: #111;
-  font-size: 1.6rem;
-  margin-bottom: 1rem;
-}
-
-.card p {
-  color: #111;
-}
-
-/* ======= SITEMAP ======= */
-.sitemap {
-  background: #007f8c; /* same flat color as landing */
-  padding: 5rem 1.5rem;
-  text-align: center;
-}
-
-.sitemap h2 {
-  font-size: 2.5rem;
-  color: #ffffff;
-  margin-bottom: 3rem;
-}
-
-.sitemap-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 3rem;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.col h4 {
-  color: rgba(255,255,255,0.95);
-  font-size: 1.4rem;
-  margin-bottom: 1.2rem;
-}
-
-.col ul {
-  list-style: none;
-  text-align: left;
-  padding-left: 1rem;
-}
-
-.col li {
-  margin: 0.8rem 0;
-  color: rgba(255,255,255,0.9);
-}
-
-/* ======= FOOTER ======= */
+// Footer
 .footer {
-  background: #007f8c; /* same flat color as landing */
+  background-color: rgba(0, 0, 0, 0.5);
   color: #fff;
-  text-align: center;
-  padding: 2rem;
-  font-size: 0.95rem;
+  padding-top: 2rem;
+  padding-bottom: 0.2rem;
+
+  // Sitemap
+  .sitemap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: start;
+    gap: 3rem;
+
+    .sitemap-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+    }
+
+    .sitemap-grid div {
+      h4 {
+        padding-bottom: 0.5rem;
+        border-bottom: 3px solid #fff;
+      }
+
+      .list-group {
+        padding-top: 0.5rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sitemap-grid {
+        grid-template-columns: repeat(1, 1fr);
+      }
+    }
+
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .sitemap-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  }
+
+  footer p {
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 0.8rem;
+  }
 }

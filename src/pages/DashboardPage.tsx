@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "./DashboardPage.scss";
-import Header from "../components/Header";
+import Header from "../components/headers/Header";
 
 const DashboardPage: React.FC = () => {
   return (

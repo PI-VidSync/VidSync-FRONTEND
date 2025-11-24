@@ -1,5 +1,5 @@
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth, googleProvider, facebookProvider } from "../../lib/firebase";
+import { auth, googleProvider, githubProvider } from "../../lib/firebase";
 import { signInWithPopup } from "firebase/auth";
 
 export async function login(email: string, password: string) {
@@ -12,7 +12,7 @@ export async function loginWithGoogle() {
   return result.user;
 }
 
-export async function loginWithFacebook() {
-  const result = await signInWithPopup(auth, facebookProvider);
+export async function loginWithGithub() {
+  const result = await signInWithPopup(auth, githubProvider);
   return result.user;
 }

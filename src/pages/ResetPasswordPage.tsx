@@ -1,81 +1,155 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
+import { z } from "zod";
+import { useToast } from "../hooks/useToast";
 import "./ResetPasswordPage.scss";
+import { Eye, EyeOff, Lock } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { FormField } from "../components/ui/input";
+
+const resetPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, "La contraseña debe tener al menos 8 caracteres")
+      .regex(/[A-Za-z]/, "Debe contener letras")
+      .regex(/[0-9]/, "Debe contener números")
+      .regex(/[^A-Za-z0-9]/, "Debe contener símbolos"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirmPassword"],
+  });
+
+type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
 const ResetPasswordPage: React.FC = () => {
+  const toast = useToast();
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    watch,
+  } = useForm<ResetPasswordFormData>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  const password = watch("password");
+  const confirmPassword = watch("confirmPassword");
+
+  const checks = useMemo(() => {
+    return {
+      length: password.length >= 8,
+      letters: /[A-Za-z]/.test(password),
+      numbers: /[0-9]/.test(password),
+      symbols: /[^A-Za-z0-9]/.test(password),
+      match: password !== "" && password === confirmPassword,
+    };
+  }, [password, confirmPassword]);
+
+  const onSubmit = async (data: ResetPasswordFormData) => {
+    setLoading(true);
+    try {
+      const validatedData = resetPasswordSchema.parse(data);
+      console.log("Datos validados:", validatedData);
+
+      toast.success("¡Contraseña actualizada exitosamente!");
+      // navigate("/login");
+
+    } catch (error) {
+      console.error(typeof error);
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Error al cambiar la contraseña. Intenta de nuevo");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="reset-page">
-      <div className="reset-card">
+    <div className="full-view">
+      <div className="card reset-card">
         <div className="reset-header">
-          <div className="logo-icon" aria-hidden="true"></div>
-          <h1 className="title">VidSync</h1>
-          <h2 className="subtitle">Cambiar contraseña</h2>
+          <img src="/logo.png" alt="VidSync" className="auth-logo" />
+          <p className="subtitle">Cambiar contraseña</p>
         </div>
 
-        <form className="reset-form">
-          <label>Contraseña</label>
-          <div className="input-wrapper">
-            <input
-              type={showPassword ? "text" : "password"}
-              placeholder="************"
-              required
-            />
-            <span
-              className="eye-icon"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-              ) : (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                  <line x1="1" y1="1" x2="23" y2="23"></line>
-                </svg>
-              )}
-            </span>
+        <form className="reset-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+          <FormField
+            label="Contraseña"
+            type={showPassword ? "text" : "password"}
+            register={register("password")}
+            error={errors.password}
+            icon={<Lock size={20} />}
+            endIcon={
+              {
+                activeIcon: <Eye size={20} />,
+                inactiveIcon: <EyeOff size={20} />,
+                onClick: () => setShowPassword(!showPassword),
+                isActive: showPassword,
+              }
+            }
+          />
+
+          <FormField
+            label="Confirmar contraseña"
+            type={showConfirmPassword ? "text" : "password"}
+            register={register("confirmPassword")}
+            error={errors.confirmPassword}
+            icon={<Lock size={20} />}
+            endIcon={
+              {
+                activeIcon: <Eye size={20} />,
+                inactiveIcon: <EyeOff size={20} />,
+                onClick: () => setShowConfirmPassword(!showConfirmPassword),
+                isActive: showConfirmPassword,
+              }
+            }
+          />
+
+          <div className="password-strength">
+            <ul className="criteria-list">
+              <li className={`criteria-item ${checks.length ? "valid" : "invalid"}`}>
+                Al menos 8 caracteres
+              </li>
+              <li className={`criteria-item ${checks.letters ? "valid" : "invalid"}`}>
+                Contiene letras
+              </li>
+              <li className={`criteria-item ${checks.numbers ? "valid" : "invalid"}`}>
+                Contiene números
+              </li>
+              <li className={`criteria-item ${checks.symbols ? "valid" : "invalid"}`}>
+                Contiene símbolos
+              </li>
+              <li className={`criteria-item ${checks.match ? "valid" : "invalid"}`}>
+                Las contraseñas coinciden
+              </li>
+            </ul>
           </div>
 
-          <label className="label-confirm">Confirmar contraseña</label>
-          <div className="input-wrapper">
-            <input
-              type={showConfirm ? "text" : "password"}
-              placeholder="************"
-              required
-            />
-            <span
-              className="eye-icon"
-              onClick={() => setShowConfirm(!showConfirm)}
-            >
-              {showConfirm ? (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-              ) : (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                  <line x1="1" y1="1" x2="23" y2="23"></line>
-                </svg>
-              )}
-            </span>
-          </div>
-
-          <div className="password-rules">
-            La contraseña debe tener al menos 8 caracteres, incluir letras, números y símbolos
-          </div>
-
-          <button type="submit" className="btn-change">
-            Cambiar contraseña
+          <button
+            type="submit"
+            className="btn btn-primary btn-flex"
+            disabled={loading || isSubmitting}
+          >
+            {loading ? "Cambiando contraseña..." : "Cambiar contraseña"}
           </button>
         </form>
 
         <p className="terms">
-          Al continuar, aceptas las <a href="#">Condiciones de uso</a> de Canva. Consulta nuestra <a href="#">Política de privacidad</a>.
+           Al continuar, aceptas las <a href="#">Condiciones del Servicio</a> de VidSync y su{" "}
+          <a href="#">Política de Privacidad</a>.
         </p>
       </div>
     </div>
