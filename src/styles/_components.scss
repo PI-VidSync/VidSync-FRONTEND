@@ -13,7 +13,6 @@
 }
 
 // Card
-
 .card {
   background: white;
   border-radius: 24px;
@@ -48,6 +47,24 @@
   margin: 1.5rem 0;
   width: 100%;
   border-bottom: 1px solid #ccc;
+}
+
+// Input
+.input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 1rem;
+
+  .input-group{
+    margin-bottom: 0 !important;
+  }
+
+  .error {
+    color: red;
+    font-size: 0.8rem;
+    padding-top: 0.3rem;
+  }
 }
 
 // Button

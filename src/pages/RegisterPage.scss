@@ -22,7 +22,6 @@
 .register-form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
 }
 
 .password-strength {
@@ -32,6 +31,7 @@
   border-radius: 10px;
   font-size: 0.85rem;
   color: #666;
+  margin-bottom: 1rem;
 }
 
 .criteria-list {

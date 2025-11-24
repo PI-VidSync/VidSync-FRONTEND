@@ -26,19 +26,21 @@ export const FormField: React.FC<FormFieldProps> = ({
   endIcon,
 }) => {
   return (
-    <div className="input-group">
-      {icon && <span className="input-group-text">{icon}</span>}
-      <div className="form-floating">
-        <input
-          {...register}
-          className={`form-control ${error ? "is-invalid" : ""}`}
-          type={type}
-          placeholder={placeholder || label}
-        />
-        <label>{label}</label>
-        {error && <div className="invalid-feedback">{error.message}</div>}
+    <div className="input-container">
+      <div className="input-group">
+        {icon && <span className="input-group-text">{icon}</span>}
+        <div className="form-floating">
+          <input
+            {...register}
+            className={`form-control ${error ? "is-invalid" : ""}`}
+            type={type}
+            placeholder={placeholder || label}
+          />
+          <label>{label}</label>
+        </div>
+        {endIcon && <button className="btn btn-input" type="button" onClick={endIcon.onClick}>{endIcon.isActive ? endIcon.activeIcon : endIcon.inactiveIcon}</button>}
       </div>
-      {endIcon && <button className="btn btn-input" type="button" onClick={endIcon.onClick}>{endIcon.isActive ? endIcon.activeIcon : endIcon.inactiveIcon}</button>}
+      {error && <div className="error">{error.message}</div>}
     </div>
   );
 };

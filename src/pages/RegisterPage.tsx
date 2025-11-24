@@ -59,7 +59,7 @@ const RegisterPage: React.FC = () => {
       firstName: "",
       lastName: "",
       email: "",
-      age: undefined,
+      age: 13,
       password: "",
       confirmPassword: "",
     },
