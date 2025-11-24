@@ -1,0 +1,42 @@
+// Title
+.title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+
+  &.title-primary {
+    color: $primary;
+  }
+
+  &.title-white {
+    color: white;
+  }
+}
+
+// Buttons
+.btn {
+  padding: 0.5rem 0.8rem;
+  border-radius: $border-radius;
+  font-family: $font-base;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s ease;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  &.btn-primary {
+    background-color: $primary;
+    color: white;
+  }
+
+  &.btn-white {
+    background-color: white;
+    color: $primary;
+
+    &:hover {
+      box-shadow: inset 0 0 0 1px $primary;
+    }
+  }
+}

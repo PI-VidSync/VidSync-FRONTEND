@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./ProfilePage.scss";
-import Header from "../components/Header";
+import Header from "../components/headers/Header";
 import { useAuth } from "../auth/AuthContext";
 
 const ProfilePage: React.FC = () => {

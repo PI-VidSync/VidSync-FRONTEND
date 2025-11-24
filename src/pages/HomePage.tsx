@@ -1,8 +1,7 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import "./HomePage.scss";
-import HomeHeader from "../components/HomeHeader";
+import { useNavigate } from "react-router-dom";
+import HomeHeader from "../components/headers/HomeHeader";
 import { useAuth } from "../auth/AuthContext";
+import "./HomePage.scss";
 
 const HomePage = () => {
   const auth = useAuth();
@@ -14,27 +13,24 @@ const HomePage = () => {
   };
 
   return (
-    <div className="landing">
+    <div>
 
       {/* Home-only header */}
       <HomeHeader />
 
-      {/* HERO */}
-      <section className="hero">
-        <div className="container">
-          <div className="hero-content">
-            <h1>Bienvenido a VidSync</h1>
-            <p>
-              Una plataforma moderna para videoconferencias eficientes. Conéctate, colabora y comunica tus ideas con nuestra interfaz intuitiva y potentes herramientas de comunicación.
-            </p>
-            <button type="button" onClick={handleStart} className="btn-start">Empezar →</button>
-          </div>
-        </div>
-      </section>
+      <div className="container">
+        {/* Hero */}
+        <section className="hero-content">
+          <img className="logo-img" src="/logo.png" alt="VidSync" />
+          <h1 className="title title-white">Bienvenido a VidSync</h1>
+          <p>
+            Una plataforma moderna para videoconferencias eficientes. Conéctate, colabora y comunica tus ideas con nuestra interfaz intuitiva y potentes herramientas de comunicación.
+          </p>
+          <button onClick={handleStart} className="btn btn-white">Empezar →</button>
+        </section>
 
-      {/* CARDS */}
-      <section className="cards">
-        <div className="container cards-inner">
+        {/* Cards */}
+        <section className="cards-section">
           <div className="card">
             <h3>Beneficios de VidSync</h3>
             <p>
@@ -48,60 +44,59 @@ const HomePage = () => {
               VidSync utiliza tecnología de punta para ofrecerte la mejor calidad de video y audio. Podrás compartir pantalla, grabar sesiones y disfrutar de una experiencia sin interrupciones.
             </p>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
-      {/* SITEMAP */}
-      <section className="sitemap">
-        <div className="container">
+      <div className="container-fluid footer">
+        {/* Sitemap */}
+        <section className="sitemap">
           <h2>Mapa del Sitio</h2>
 
           <div className="sitemap-grid">
-            <div className="col">
+            <div>
               <h4>Acceso</h4>
-              <ul>
-                <li>Iniciar Sesión</li>
-                <li>Registrarse</li>
-                <li>Recuperar Contraseña</li>
+              <ul className="list-group">
+                <li className="list-group-item">Iniciar Sesión</li>
+                <li className="list-group-item">Registrarse</li>
+                <li className="list-group-item">Recuperar Contraseña</li>
               </ul>
             </div>
 
-            <div className="col">
+            <div>
               <h4>Gestión de Videollamada</h4>
-              <ul>
-                <li>Dashboard/Lista de Videollamadas</li>
-                <li>Crear Videollamada</li>
-                <li>Unirse a una Videollamada</li>
+              <ul className="list-group">
+                <li className="list-group-item">Dashboard/Lista de Videollamadas</li>
+                <li className="list-group-item">Crear Videollamada</li>
+                <li className="list-group-item">Unirse a una Videollamada</li>
               </ul>
             </div>
 
             <div className="col">
               <h4>Perfil de Usuario</h4>
-              <ul>
-                <li>Ver Perfil</li>
-                <li>Editar Perfil</li>
-                <li>Eliminar Perfil</li>
+              <ul className="list-group">
+                <li className="list-group-item">Ver Perfil</li>
+                <li className="list-group-item">Editar Perfil</li>
+                <li className="list-group-item">Eliminar Perfil</li>
               </ul>
             </div>
 
             <div className="col">
               <h4>Información</h4>
-              <ul>
-                <li>Inicio</li>
-                <li>Beneficios</li>
-                <li>Acerca de VidSync</li>
-                <li>Contacto</li>
+              <ul className="list-group">
+                <li className="list-group-item">Inicio</li>
+                <li className="list-group-item">Beneficios</li>
+                <li className="list-group-item">Acerca de VidSync</li>
+                <li className="list-group-item">Contacto</li>
               </ul>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* FOOTER */}
-      <footer className="footer">
-        <p>© 2025 VidSync. Todos los derechos reservados.</p>
-      </footer>
-
+        {/* Footer */}
+        <footer>
+          <p>© 2025 VidSync. Todos los derechos reservados.</p>
+        </footer>
+      </div>
     </div>
   );
 };

@@ -1,8 +1,0 @@
-/* Oculta únicamente el texto dentro de elementos con la clase .logo-icon
-	 Conserva el elemento en el layout para no romper el espacio reservado */
-.logo-icon {
-	text-indent: -9999px;
-	overflow: hidden;
-	display: inline-block;
-}
-

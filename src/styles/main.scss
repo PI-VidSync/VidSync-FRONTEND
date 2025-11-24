@@ -1,0 +1,13 @@
+// Importa variables primero (antes de Bootstrap)
+@import './variables';
+
+// Importa Bootstrap con SASS
+@import 'bootstrap/scss/bootstrap';
+
+// Estilos base
+@import './globals';
+
+// Componentes globales
+@import './components';
+
+// Las vistas siguen igual, pero si quieres puedes importarlas aquí también
