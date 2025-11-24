@@ -31,13 +31,6 @@
   margin: 0 auto 6px;
 }
 
-.register-header .auth-logo {
-  width: 161px; /* increased ~40% from 115px */
-  height: auto;
-  display: block;
-  margin: 0 auto 8px;
-}
-
 /* Reduce vertical spacing between stacked password fields in edit form */
 .edit-profile-card .register-form {
   gap: 0.9rem; /* slightly tighter */
@@ -70,13 +63,6 @@
   color: #00bfa5;
   margin: 0.4rem 0;
   font-weight: 700;
-}
-
-.subtitle {
-  font-size: 1.8rem;
-  color: #333;
-  margin-bottom: 2.5rem;
-  font-weight: 600;
 }
 
 .register-form {
