@@ -1,21 +1,72 @@
 import React, { useState, useMemo } from "react";
-import { useAuth } from "../auth/AuthContext";
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { z } from "zod";
+import { useToast } from "../hooks/useToast";
 import "./RegisterPage.scss";
+import { Eye, EyeOff, Lock, Mail, User, Calendar } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { FormField } from "../components/ui/input";
+
+const registerSchema = z
+  .object({
+    firstName: z
+      .string()
+      .min(1, "El nombre es requerido")
+      .min(2, "El nombre debe tener al menos 2 caracteres"),
+    lastName: z
+      .string()
+      .min(1, "El apellido es requerido")
+      .min(2, "El apellido debe tener al menos 2 caracteres"),
+    email: z
+      .string()
+      .min(1, "El email es requerido")
+      .email("Ingresa un email válido"),
+    age: z
+      .number()
+      .min(13, "Debes tener al menos 13 años")
+      .max(120, "Ingresa una edad válida"),
+    password: z
+      .string()
+      .min(8, "La contraseña debe tener al menos 8 caracteres")
+      .regex(/[A-Za-z]/, "Debe contener letras")
+      .regex(/[0-9]/, "Debe contener números")
+      .regex(/[^A-Za-z0-9]/, "Debe contener símbolos"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirmPassword"],
+  });
+
+type RegisterFormData = z.infer<typeof registerSchema>;
 
 const RegisterPage: React.FC = () => {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [age, setAge] = useState<string | number>("");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-
-  const auth = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    watch,
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      age: undefined,
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  const password = watch("password");
+  const confirmPassword = watch("confirmPassword");
 
   const checks = useMemo(() => {
     return {
@@ -23,113 +74,140 @@ const RegisterPage: React.FC = () => {
       letters: /[A-Za-z]/.test(password),
       numbers: /[0-9]/.test(password),
       symbols: /[^A-Za-z0-9]/.test(password),
-      match: password !== "" && password === confirm,
+      match: password !== "" && password === confirmPassword,
     };
-  }, [password, confirm]);
+  }, [password, confirmPassword]);
 
-  const allValid = checks.length && checks.letters && checks.numbers && checks.symbols && checks.match;
+  const onSubmit = async (data: RegisterFormData) => {
+    setLoading(true);
+    try {
+      const validatedData = registerSchema.parse(data);
+      console.log("Datos validados:", validatedData);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!allValid) return;
-    // Aquí puedes añadir la lógica real de registro (API)
-    // Simulamos registro + login automático
-    auth.login(email, password).then((ok) => {
-      if (ok) {
-        // store the profile info in the auth context so header shows name
-        auth.updateProfile({ firstName, lastName, age });
-        navigate("/dashboard");
+      toast.success("¡Registro exitoso!");
+      // navigate("/dashboard");
+
+    } catch (error) {
+      console.error(typeof error);
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Error al registrarse. Intenta de nuevo");
       }
-    });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="register-page">
-      <div className="register-card">
+    <div className="full-view">
+      <div className="card register-card">
         <div className="register-header">
-          <div className="logo-icon" aria-hidden="true"></div>
           <img src="/logo.png" alt="VidSync" className="auth-logo" />
-          <h2 className="subtitle">Crea tu cuenta</h2>
+          <p className="subtitle">
+            Crea tu cuenta en VidSync y comienza ahora
+          </p>
         </div>
 
-        <form className="register-form" onSubmit={handleSubmit}>
-          <div className="form-row">
-            <input value={firstName} onChange={(e) => setFirstName(e.target.value)} type="text" placeholder="Nombre(s)" required />
-            <input value={lastName} onChange={(e) => setLastName(e.target.value)} type="text" placeholder="Apellido(s)" required />
-          </div>
+        <form className="register-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+          <FormField
+            label="Nombre"
+            type="text"
+            register={register("firstName")}
+            error={errors.firstName}
+            icon={<User size={20} />}
+          />
+          <FormField
+            label="Apellido"
+            type="text"
+            register={register("lastName")}
+            error={errors.lastName}
+            icon={<User size={20} />}
+          />
 
-          <div className="form-row">
-            <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Correo electrónico" required />
-            <input value={age} onChange={(e) => setAge(e.target.value)} type="number" placeholder="Edad" required />
-          </div>
+          <FormField
+            label="Email"
+            type="email"
+            register={register("email")}
+            error={errors.email}
+            icon={<Mail size={20} />}
+          />
+          <FormField
+            label="Edad"
+            type="number"
+            register={register("age", { valueAsNumber: true })}
+            error={errors.age}
+            icon={<Calendar size={20} />}
+          />
 
-          <div className="input-wrapper">
-            <input
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              type={showPassword ? "text" : "password"}
-              placeholder="Contraseña"
-              required
-            />
-            <span className="eye-icon" onClick={() => setShowPassword(!showPassword)}>
-              {showPassword ? (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-              ) : (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                  <line x1="1" y1="1" x2="23" y2="23"></line>
-                </svg>
-              )}
-            </span>
-          </div>
+          <FormField
+            label="Contraseña"
+            type={showPassword ? "text" : "password"}
+            register={register("password")}
+            error={errors.password}
+            icon={<Lock size={20} />}
+            endIcon={
+              {
+                activeIcon: <Eye size={20} />,
+                inactiveIcon: <EyeOff size={20} />,
+                onClick: () => setShowPassword(!showPassword),
+                isActive: showPassword,
+              }
+            }
+          />
 
-          <div className="input-wrapper">
-            <input
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              type={showConfirm ? "text" : "password"}
-              placeholder="Confirmar contraseña"
-              required
-            />
-            <span className="eye-icon" onClick={() => setShowConfirm(!showConfirm)}>
-              {showConfirm ? (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-              ) : (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                  <line x1="1" y1="1" x2="23" y2="23"></line>
-                </svg>
-              )}
-            </span>
-          </div>
+          <FormField
+            label="Confirmar contraseña"
+            type={showConfirmPassword ? "text" : "password"}
+            register={register("confirmPassword")}
+            error={errors.confirmPassword}
+            icon={<Lock size={20} />}
+            endIcon={
+              {
+                activeIcon: <Eye size={20} />,
+                inactiveIcon: <EyeOff size={20} />,
+                onClick: () => setShowConfirmPassword(!showConfirmPassword),
+                isActive: showConfirmPassword,
+              }
+            }
+          />
 
           <div className="password-strength">
             <ul className="criteria-list">
-              <li className={`criteria-item ${checks.length ? "valid" : "invalid"}`}>Al menos 8 caracteres</li>
-              <li className={`criteria-item ${checks.letters ? "valid" : "invalid"}`}>Contiene letras</li>
-              <li className={`criteria-item ${checks.numbers ? "valid" : "invalid"}`}>Contiene números</li>
-              <li className={`criteria-item ${checks.symbols ? "valid" : "invalid"}`}>Contiene símbolos</li>
-              <li className={`criteria-item ${checks.match ? "valid" : "invalid"}`}>Las contraseñas coinciden</li>
+              <li className={`criteria-item ${checks.length ? "valid" : "invalid"}`}>
+                Al menos 8 caracteres
+              </li>
+              <li className={`criteria-item ${checks.letters ? "valid" : "invalid"}`}>
+                Contiene letras
+              </li>
+              <li className={`criteria-item ${checks.numbers ? "valid" : "invalid"}`}>
+                Contiene números
+              </li>
+              <li className={`criteria-item ${checks.symbols ? "valid" : "invalid"}`}>
+                Contiene símbolos
+              </li>
+              <li className={`criteria-item ${checks.match ? "valid" : "invalid"}`}>
+                Las contraseñas coinciden
+              </li>
             </ul>
           </div>
 
-          <button type="submit" className="btn-register-main" disabled={!allValid}>
-            Crear cuenta
+          <button
+            type="submit"
+            className="btn btn-primary btn-flex"
+            disabled={loading || isSubmitting}
+          >
+            {loading ? "Creando cuenta..." : "Crear cuenta"}
           </button>
         </form>
 
-        <p className="login-link">
+        <p className="login-register">
           ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
         </p>
 
         <p className="terms">
-          Al continuar, aceptas las <a href="#">Condiciones del Servicio</a> de VidSync y su <a href="#">Política de Privacidad</a>.
+          Al continuar, aceptas las <a href="#">Condiciones del Servicio</a> de VidSync y su{" "}
+          <a href="#">Política de Privacidad</a>.
         </p>
       </div>
     </div>
