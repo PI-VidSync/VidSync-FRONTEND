@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Header from "../components/headers/Header";
 import "./JoinMeetingPage.scss";
 
 const JoinMeetingPage: React.FC = () => {
@@ -16,8 +15,6 @@ const JoinMeetingPage: React.FC = () => {
 
   return (
     <div className="join-meeting">
-      <Header />
-
       {/* CONTENIDO */}
       <main className="main-content">
         <div className="modal-card">

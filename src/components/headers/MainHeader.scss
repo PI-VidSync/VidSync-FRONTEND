@@ -1,4 +1,4 @@
-.home-header {
+.main-header {
   background: #ffffff;
   color: #00695c;
   position: sticky;
@@ -6,7 +6,7 @@
   left: 0;
   right: 0;
   height: 64px;
-  display: flex;
+  display: flex;  
   padding: 0 1.3rem;
   align-items: center;
   justify-content: space-between;
@@ -19,12 +19,12 @@
   }
 }
 
-.home-header-buttons {
+.main-header-buttons {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
 @media (max-width: 768px) {
-  .home-header-center { position: static; transform:none; margin-left: auto; }
+  .main-header-center { position: static; transform:none; margin-left: auto; }
 }

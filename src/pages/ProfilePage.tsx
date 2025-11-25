@@ -1,7 +1,6 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./ProfilePage.scss";
-import Header from "../components/headers/Header";
 import { useAuth } from "../auth/AuthContext";
 
 const ProfilePage: React.FC = () => {
@@ -10,8 +9,6 @@ const ProfilePage: React.FC = () => {
 
   return (
     <div className="profile-page">
-      <Header />
-
       <main className="profile-content">
         <div className="profile-card">
           {/* Saludo */}

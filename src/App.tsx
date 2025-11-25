@@ -17,6 +17,7 @@ import ProtectedRoute from './components/routes/ProtectedRoute';
 import PublicRoute from './components/routes/PublicRoute';
 import { ToastContainer } from './components/ui/toast';
 import NotFoundPage from './pages/NotFoundPage';
+import MainLayout from './components/layout/mainLayout';
 
 function App() {
   return (
@@ -33,12 +34,13 @@ function App() {
           </Route>
 
           <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/create-meeting" element={<CreateMeetingPage />} />
-            <Route path="/join-meeting" element={<JoinMeetingPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/profile/edit" element={<EditProfilePage />} />
-            <Route path="/home" element={<HomePage />} />
+            <Route element={<MainLayout />}>
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/create-meeting" element={<CreateMeetingPage />} />
+              <Route path="/join-meeting" element={<JoinMeetingPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/profile/edit" element={<EditProfilePage />} />
+            </Route>
             <Route path="*" element={<NotFoundPage />} />
           </Route>
 

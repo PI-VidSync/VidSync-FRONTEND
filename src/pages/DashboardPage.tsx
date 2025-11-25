@@ -1,13 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "./DashboardPage.scss";
-import Header from "../components/headers/Header";
 
 const DashboardPage: React.FC = () => {
   return (
-    <div className="dashboard">
-      <Header />
-
+    <div className="dashboard"> 
       {/* CONTENIDO */}
       <main className="dashboard-main">
         <div className="cards-container">
