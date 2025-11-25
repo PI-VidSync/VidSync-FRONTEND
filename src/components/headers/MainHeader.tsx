@@ -3,12 +3,15 @@ import { Link } from "react-router-dom";
 import "./MainHeader.scss";
 import { useAuth } from "../../auth/AuthContext";
 import { User2, LogOut } from "lucide-react";
+import { useToast } from "../../hooks/useToast";
 
 const MainHeader: React.FC = () => {
   const { currentUser, logout } = useAuth();
+  const toast = useToast();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
+    toast.success("Sesión cerrada exitosamente");
   };
 
   return (

@@ -5,10 +5,10 @@ import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
-import DashboardPage from './pages/DashboardPage';
+import DashboardPage from './pages/dashboard/DashboardPage';
 import CreateMeetingPage from './pages/CreateMeetingPage';
 import JoinMeetingPage from './pages/JoinMeetingPage';
-import ProfilePage from './pages/ProfilePage';
+import ProfilePage from './pages/profile/ProfilePage';
 import EditProfilePage from './pages/EditProfilePage';
 import HomePage from './pages/home/HomePage';
 
@@ -17,7 +17,7 @@ import ProtectedRoute from './components/routes/ProtectedRoute';
 import PublicRoute from './components/routes/PublicRoute';
 import { ToastContainer } from './components/ui/toast';
 import NotFoundPage from './pages/NotFoundPage';
-import MainLayout from './components/layout/mainLayout';
+import MainLayout from './components/layout/MainLayout';
 
 function App() {
   return (
