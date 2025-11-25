@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import HomeHeader from "../components/headers/HomeHeader";
-import { useAuth } from "../auth/AuthContext";
+import HomeHeader from "../../components/headers/HomeHeader";
+import { useAuth } from "../../auth/AuthContext";
 import "./HomePage.scss";
 
 const HomePage = () => {
@@ -14,14 +14,13 @@ const HomePage = () => {
 
   return (
     <div>
-
       {/* Home-only header */}
       <HomeHeader />
 
       <div className="container">
         {/* Hero */}
         <section className="hero-content">
-          <img className="logo-img" src="/logo.png" alt="VidSync" />
+          <img className="hero-logo" src="/logo.png" alt="VidSync" />
           <h1 className="title title-white">Bienvenido a VidSync</h1>
           <p>
             Una plataforma moderna para videoconferencias eficientes. Conéctate, colabora y comunica tus ideas con nuestra interfaz intuitiva y potentes herramientas de comunicación.

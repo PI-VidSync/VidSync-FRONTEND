@@ -1,9 +1,24 @@
-import React from 'react';
+import { SearchX } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const NotFoundPage = () => {
+  const navigate = useNavigate();
+
+  const goToDashboard = () => {
+    navigate('/dashboard');
+  };
+
   return (
-    <div style={{ padding: '100px 2rem', textAlign: 'center' }}>
-      <h1 style={{ fontSize: '3rem', color: '#00695c' }}>404 - Página no encontrada</h1>
+    <div
+      className="full-view"
+      style={{ display: 'flex', flexDirection: 'column', alignItems: 'top', justifyContent: 'center', textAlign: 'center', gap: '1rem' }}
+    >
+      <SearchX size={150} color="white" />
+      <h1 style={{ fontSize: '3rem', color: 'white' }}>404 - Página no encontrada</h1>
+      <p style={{ color: 'white' }}>Lo siento, la página que estás buscando no existe.</p>
+      <button onClick={goToDashboard} className="btn btn-white">
+        Volver al Dashboard
+      </button>
     </div>
   );
 };

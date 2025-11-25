@@ -2,7 +2,7 @@ import React from "react";
 
 export const ToastContainer: React.FC = () => {
   return (
-    <div className="toast-container position-fixed top-0 end-0 p-3" style={{ zIndex: 9999 }}>
+    <div className="toast-container position-fixed bottom-0 end-0 p-3" style={{ zIndex: 9999 }}>
       <div
         id="globalToast"
         className="toast align-items-center text-white bg-primary border-0"

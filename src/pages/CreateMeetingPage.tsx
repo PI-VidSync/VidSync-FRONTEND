@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Header from "../components/headers/Header";
 import "./CreateMeetingPage.scss";
 
 const CreateMeetingPage: React.FC = () => {
@@ -17,8 +16,6 @@ const CreateMeetingPage: React.FC = () => {
 
   return (
     <div className="create-meeting-page">
-      <Header />
-
       {/* MODAL CENTRADO */}
       <div className="modal-container">
         <div className="create-modal">

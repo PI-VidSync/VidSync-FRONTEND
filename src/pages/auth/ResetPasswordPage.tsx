@@ -1,31 +1,14 @@
 import React, { useState, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { useToast } from "../hooks/useToast";
-import "./RegisterPage.scss";
-import { Eye, EyeOff, Lock, Mail, User, Calendar } from "lucide-react";
+import { useToast } from "@/hooks/useToast";
+import "./ResetPasswordPage.scss";
+import { Eye, EyeOff, Lock } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormField } from "../components/ui/input";
+import { FormField } from "@/components/ui/input";
 
-const registerSchema = z
+const resetPasswordSchema = z
   .object({
-    firstName: z
-      .string()
-      .min(1, "El nombre es requerido")
-      .min(2, "El nombre debe tener al menos 2 caracteres"),
-    lastName: z
-      .string()
-      .min(1, "El apellido es requerido")
-      .min(2, "El apellido debe tener al menos 2 caracteres"),
-    email: z
-      .string()
-      .min(1, "El email es requerido")
-      .email("Ingresa un email válido"),
-    age: z
-      .number()
-      .min(13, "Debes tener al menos 13 años")
-      .max(120, "Ingresa una edad válida"),
     password: z
       .string()
       .min(8, "La contraseña debe tener al menos 8 caracteres")
@@ -39,10 +22,9 @@ const registerSchema = z
     path: ["confirmPassword"],
   });
 
-type RegisterFormData = z.infer<typeof registerSchema>;
+type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
-const RegisterPage: React.FC = () => {
-  const navigate = useNavigate();
+const ResetPasswordPage: React.FC = () => {
   const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -53,13 +35,9 @@ const RegisterPage: React.FC = () => {
     handleSubmit,
     formState: { errors, isSubmitting },
     watch,
-  } = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
+  } = useForm<ResetPasswordFormData>({
+    resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
-      age: 13,
       password: "",
       confirmPassword: "",
     },
@@ -78,21 +56,21 @@ const RegisterPage: React.FC = () => {
     };
   }, [password, confirmPassword]);
 
-  const onSubmit = async (data: RegisterFormData) => {
+  const onSubmit = async (data: ResetPasswordFormData) => {
     setLoading(true);
     try {
-      const validatedData = registerSchema.parse(data);
+      const validatedData = resetPasswordSchema.parse(data);
       console.log("Datos validados:", validatedData);
 
-      toast.success("¡Registro exitoso!");
-      // navigate("/dashboard");
+      toast.success("¡Contraseña actualizada exitosamente!");
+      // navigate("/login");
 
     } catch (error) {
       console.error(typeof error);
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
-        toast.error("Error al registrarse. Intenta de nuevo");
+        toast.error("Error al cambiar la contraseña. Intenta de nuevo");
       }
     } finally {
       setLoading(false);
@@ -101,45 +79,13 @@ const RegisterPage: React.FC = () => {
 
   return (
     <div className="full-view">
-      <div className="card register-card">
-        <div className="register-header">
+      <div className="card reset-card">
+        <div className="reset-header">
           <img src="/logo.png" alt="VidSync" className="auth-logo" />
-          <p className="subtitle">
-            Crea tu cuenta en VidSync y comienza ahora
-          </p>
+          <p className="subtitle">Cambiar contraseña</p>
         </div>
 
-        <form className="register-form" onSubmit={handleSubmit(onSubmit)} noValidate>
-          <FormField
-            label="Nombre"
-            type="text"
-            register={register("firstName")}
-            error={errors.firstName}
-            icon={<User size={20} />}
-          />
-          <FormField
-            label="Apellido"
-            type="text"
-            register={register("lastName")}
-            error={errors.lastName}
-            icon={<User size={20} />}
-          />
-
-          <FormField
-            label="Email"
-            type="email"
-            register={register("email")}
-            error={errors.email}
-            icon={<Mail size={20} />}
-          />
-          <FormField
-            label="Edad"
-            type="number"
-            register={register("age", { valueAsNumber: true })}
-            error={errors.age}
-            icon={<Calendar size={20} />}
-          />
-
+        <form className="reset-form" onSubmit={handleSubmit(onSubmit)} noValidate>
           <FormField
             label="Contraseña"
             type={showPassword ? "text" : "password"}
@@ -197,16 +143,12 @@ const RegisterPage: React.FC = () => {
             className="btn btn-primary btn-flex"
             disabled={loading || isSubmitting}
           >
-            {loading ? "Creando cuenta..." : "Crear cuenta"}
+            {loading ? "Cambiando contraseña..." : "Cambiar contraseña"}
           </button>
         </form>
 
-        <p className="login-register">
-          ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
-        </p>
-
         <p className="terms">
-          Al continuar, aceptas las <a href="#">Condiciones del Servicio</a> de VidSync y su{" "}
+           Al continuar, aceptas las <a href="#">Condiciones del Servicio</a> de VidSync y su{" "}
           <a href="#">Política de Privacidad</a>.
         </p>
       </div>
@@ -214,4 +156,4 @@ const RegisterPage: React.FC = () => {
   );
 };
 
-export default RegisterPage;
+export default ResetPasswordPage;

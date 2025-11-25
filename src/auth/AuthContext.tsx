@@ -1,62 +1,144 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import type { User } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import {
+  login as loginWithEmail,
+  loginWithGoogle,
+  loginWithGithub,
+} from '@/service/firebase/login';
+import { logout as firebaseLogout } from '@/service/firebase/logout';
+import { register as registerWithEmail } from '@/service/firebase/register';
+import { verifyToken } from '@/service/api/auth';
 type AuthContextType = {
   isAuthenticated: boolean;
-  user: { email: string; firstName?: string; lastName?: string; age?: string | number } | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
-  updateProfile: (data: Partial<{ email: string; firstName: string; lastName: string; age: string | number }>) => void;
+  currentUser: User | null;
+  loading: boolean;
+  userToken: string | null;
+  login: (email: string, password: string) => Promise<void>;
+  register: (user: UserRegister) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
+  loginWithGithub: () => Promise<void>;
+  logout: () => Promise<void>;
+  getToken: () => Promise<string | null>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const TOKEN_KEY = "vidsync_token";
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<{ email: string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [userToken, setUserToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem(TOKEN_KEY);
-    if (token) {
-      // En un proyecto real validar token con backend. Aquí asumimos válido.
-      setUser({ email: "user@local" });
-    }
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setCurrentUser(user);
+
+      if (user) {
+        const token = await user.getIdToken();
+        const data = await verifyToken(token);
+        setUserToken(token);
+      } else {
+        setUserToken(null);
+      }
+
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const login = async (email: string, password: string) => {
-    // Aquí pondrías la llamada real a la API. Simulamos éxito si hay texto.
-    if (email && password) {
-      const fakeToken = "fake-jwt-token";
-      localStorage.setItem(TOKEN_KEY, fakeToken);
-      setUser({ email });
-      return true;
+  const login = async (email: string, password: string): Promise<void> => {
+    try {
+      await loginWithEmail(email, password);
+    } catch (error: any) {
+      console.error('Error en login:', error);
+      throw new Error(error.message || 'Error al iniciar sesión');
     }
-    return false;
   };
 
-  const logout = () => {
-    localStorage.removeItem(TOKEN_KEY);
-    setUser(null);
+  const register = async (user: UserRegister): Promise<void> => {
+    try {
+      await registerWithEmail(user);
+    } catch (error: any) {
+      console.error('Error en registro:', error);
+      throw new Error(error.message || 'Error al registrarse');
+    }
   };
 
-  const updateProfile = (data: Partial<{ email: string; firstName: string; lastName: string; age: string | number }>) => {
-    setUser((prev) => {
-      if (!prev) return { email: data.email ?? "user@local", ...data };
-      return { ...prev, ...data } as typeof prev;
-    });
+  const handleGoogleLogin = async (): Promise<void> => {
+    try {
+      await loginWithGoogle();
+    } catch (error: any) {
+      console.error('Error con Google:', error);
+      throw new Error(error.message || 'Error al iniciar sesión con Google');
+    }
   };
+
+  const handleGithubLogin = async (): Promise<void> => {
+    try {
+      await loginWithGithub();
+    } catch (error: any) {
+      console.error('Error con Github:', error);
+      throw new Error(error.message || 'Error al iniciar sesión con Github');
+    }
+  };
+
+  const handleLogout = async (): Promise<void> => {
+    try {
+      await firebaseLogout();
+    } catch (error: any) {
+      console.error('Error al cerrar sesión:', error);
+      throw new Error(error.message || 'Error al cerrar sesión');
+    }
+  };
+
+  const getToken = async (): Promise<string | null> => {
+    if (!currentUser) return null;
+    try {
+      return await currentUser.getIdToken();
+    } catch (error) {
+      console.error('Error obteniendo token:', error);
+      return null;
+    }
+  };
+
+  const value: AuthContextType = {
+    isAuthenticated: !!currentUser,
+    currentUser,
+    loading,
+    userToken,
+    login,
+    register,
+    loginWithGoogle: handleGoogleLogin,
+    loginWithGithub: handleGithubLogin,
+    logout: handleLogout,
+    getToken
+  };
+
+  if (loading) {
+    return (
+      <div className='full-view'>
+        <div className='spinner-border'>
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated: !!user, user, login, logout, updateProfile }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
 };
 
 export const useAuth = () => {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
-  return ctx;
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth debe usarse dentro de AuthProvider');
+  }
+  return context;
 };
 
 export default AuthContext;

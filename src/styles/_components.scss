@@ -3,7 +3,7 @@
 // Full View
 .full-view {
   min-width: 100%;
-  min-height: 100%;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -77,6 +77,9 @@
   cursor: pointer;
   border: none;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 
   &:hover {
     opacity: 0.9;
@@ -128,4 +131,11 @@
   &.title-white {
     color: white;
   }
+}
+
+// Spinner
+.spinner-border {
+  color: white;
+  width: 5rem;
+  height: 5rem;
 }

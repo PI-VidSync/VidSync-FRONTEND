@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { useToast } from "../hooks/useToast";
+import { useToast } from "@/hooks/useToast";
 import "./LoginPage.scss";
-import { loginWithGoogle, loginWithGithub } from "../service/firebase/login";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
-import { verifyToken } from "../service/api/auth";
+import { verifyToken } from "@/service/api/auth";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormField } from "../components/ui/input";
+import { FormField } from "@/components/ui/input";
+import { useAuth } from "@/auth/AuthContext";
 
 const loginSchema = z.object({
   email: z
@@ -26,6 +26,8 @@ const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const { login, loginWithGoogle, loginWithGithub } = useAuth();
+
   const {
     register,
     handleSubmit,
@@ -41,11 +43,11 @@ const LoginPage: React.FC = () => {
   const onSubmit = async (data: LoginFormData) => {
     setLoading(true);
     try {
-      const validatedData = loginSchema.parse(data);
-      console.log("Datos validados:", validatedData);
+      const { email, password } = loginSchema.parse(data);
+      await login(email, password);
 
       toast.success("¡Inicio de sesión exitoso!");
-      // navigate("/dashboard");
+      navigate("/dashboard");
 
     } catch (error) {
       console.error(typeof error)
@@ -61,12 +63,9 @@ const LoginPage: React.FC = () => {
 
   async function handleGoogle() {
     try {
-      const user = await loginWithGoogle();
-      const token = await user.getIdToken();
-      const data = await verifyToken(token);
-      console.log("Backend response:", data);
+      await loginWithGoogle();
       toast.success("¡Inicio de sesión con Google exitoso!");
-      // navigate("/dashboard");
+      navigate("/dashboard");
     } catch (error) {
       console.error("Error:", error);
       toast.error("Error al iniciar sesión con Google");
@@ -75,13 +74,9 @@ const LoginPage: React.FC = () => {
 
   async function handleGithub() {
     try {
-      const user = await loginWithGithub();
-      const token = await user.getIdToken();
-      console.log("Token:", token);
-      const data = await verifyToken(token);
-      console.log("Backend response:", data);
+      await loginWithGithub();
       toast.success("¡Inicio de sesión con GitHub exitoso!");
-      // navigate("/dashboard");
+      navigate("/dashboard");
     } catch (error) {
       console.error("Error:", error);
       toast.error("Error al iniciar sesión con GitHub");
