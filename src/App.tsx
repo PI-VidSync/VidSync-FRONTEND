@@ -9,7 +9,7 @@ import DashboardPage from './pages/dashboard/DashboardPage';
 import CreateMeetingPage from './pages/CreateMeetingPage';
 import JoinMeetingPage from './pages/JoinMeetingPage';
 import ProfilePage from './pages/profile/ProfilePage';
-import EditProfilePage from './pages/EditProfilePage';
+// import EditProfilePage from './pages/EditProfilePage';
 import HomePage from './pages/home/HomePage';
 
 import { AuthProvider } from './auth/AuthContext';
@@ -39,7 +39,7 @@ function App() {
               <Route path="/create-meeting" element={<CreateMeetingPage />} />
               <Route path="/join-meeting" element={<JoinMeetingPage />} />
               <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/profile/edit" element={<EditProfilePage />} />
+              {/* <Route path="/profile/edit" element={<EditProfilePage />} /> */}
             </Route>
             <Route path="*" element={<NotFoundPage />} />
           </Route>
