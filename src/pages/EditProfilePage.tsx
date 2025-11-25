@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
-import "./RegisterPage.scss";
+import "./auth/RegisterPage.scss";
 
 const EditProfilePage: React.FC = () => {
   const auth = useAuth();

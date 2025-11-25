@@ -3,7 +3,7 @@
 // Full View
 .full-view {
   min-width: 100%;
-  min-height: 100%;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -128,4 +128,11 @@
   &.title-white {
     color: white;
   }
+}
+
+// Spinner
+.spinner-border {
+  color: white;
+  width: 5rem;
+  height: 5rem;
 }

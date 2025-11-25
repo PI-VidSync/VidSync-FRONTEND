@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { z } from "zod";
-import { useToast } from "../hooks/useToast";
+import { useToast } from "@/hooks/useToast";
 import "./ForgotPasswordPage.scss";
 import { Mail } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormField } from "../components/ui/input";
+import { FormField } from "@/components/ui/input";
 
 const forgotPasswordSchema = z.object({
   email: z
