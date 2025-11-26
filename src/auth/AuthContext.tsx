@@ -62,45 +62,55 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string): Promise<void> => {
     try {
       await loginWithEmail(email, password);
-    } catch (error: any) {
-      console.error('Error en login:', error);
-      throw new Error(error.message || 'Error al iniciar sesión');
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Error en login:', error);
+        throw new Error(error.message || 'Error al iniciar sesión');
+      }
     }
   };
 
   const register = async (user: UserRegister): Promise<void> => {
     try {
       await registerWithEmail(user);
-    } catch (error: any) {
-      console.error('Error en registro:', error);
-      throw new Error(error.message || 'Error al registrarse');
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Error en registro:', error);
+        throw new Error(error.message || 'Error al registrarse');
+      }
     }
   };
 
   const handleGoogleLogin = async (): Promise<void> => {
     try {
       await loginWithGoogle();
-    } catch (error: any) {
-      console.error('Error con Google:', error);
-      throw new Error(error.message || 'Error al iniciar sesión con Google');
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Error con Google:', error);
+        throw new Error(error.message || 'Error al iniciar sesión con Google');
+      }
     }
   };
 
   const handleGithubLogin = async (): Promise<void> => {
     try {
       await loginWithGithub();
-    } catch (error: any) {
-      console.error('Error con Github:', error);
-      throw new Error(error.message || 'Error al iniciar sesión con Github');
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Error con Github:', error);
+        throw new Error(error.message || 'Error al iniciar sesión con Github');
+      }
     }
   };
 
   const handleLogout = async (): Promise<void> => {
     try {
       await firebaseLogout();
-    } catch (error: any) {
-      console.error('Error al cerrar sesión:', error);
-      throw new Error(error.message || 'Error al cerrar sesión');
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Error al cerrar sesión:', error);
+        throw new Error(error.message || 'Error al cerrar sesión');
+      }
     }
   };
 

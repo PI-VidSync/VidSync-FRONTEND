@@ -1,12 +1,10 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import "./ProfilePage.scss";
 import { Modal } from "@/components/ui/modal";
 import EditProfileForm from "@/components/forms/EditProfileForm";
 
 const ProfilePage: React.FC = () => {
-  const navigate = useNavigate();
   const { currentUser } = useAuth();
 
   return (

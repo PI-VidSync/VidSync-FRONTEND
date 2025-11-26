@@ -85,7 +85,8 @@ const RegisterPage: React.FC = () => {
       console.log("Datos validados:", validatedData);
 
       toast.success("¡Registro exitoso!");
-      // navigate("/dashboard");
+      toast.info("Por favor, inicia sesión con tus credenciales");
+      navigate("/login");
 
     } catch (error) {
       console.error(typeof error);

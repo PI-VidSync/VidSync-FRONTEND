@@ -4,7 +4,6 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import "./ChatCard.scss"
-import { useToast } from "@/hooks/useToast";
 
 type ChatMessage = {
   id: string;
@@ -34,12 +33,9 @@ const chatSchema = z.object({
 type ChatFormSchema = z.infer<typeof chatSchema>;
 
 export const ChatPanel = () => {
-  const toast = useToast()
-
   const {
     register,
     handleSubmit,
-    formState: { errors },
   } = useForm<ChatFormSchema>({
     resolver: zodResolver(chatSchema),
   });

@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import "./IntoMeeting.scss";
-
-import { Mic, MicOff, PhoneOff, Send, Video, VideoOff } from "lucide-react";
+import { Mic, MicOff, PhoneOff, Video, VideoOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { MeetCard } from "@/components/meet/meetCard";
 import { ChatPanel } from "@/components/meet/ChatCard";
+import "./IntoMeeting.scss";
+import { MeetCard } from "@/components/meet/MeetCard";
 
 type StageParticipant = {
   id: string;

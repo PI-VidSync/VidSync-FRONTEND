@@ -1,11 +1,10 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { z } from "zod";
 import { useToast } from "@/hooks/useToast";
-import {  Mail, User, Calendar } from "lucide-react";
+import { Mail, User, Calendar } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField } from "@/components/ui/input";
-import { useAuth } from "../../auth/AuthContext";
 import "./EditProfileForm.scss";
 
 const editProfileSchema = z
@@ -26,34 +25,7 @@ const editProfileSchema = z
       .number()
       .min(13, "Debes tener al menos 13 años")
       .max(120, "Ingresa una edad válida"),
-    password: z
-      .string()
-      .optional()
-      .refine(
-        (val) => !val || val.length >= 8,
-        "La contraseña debe tener al menos 8 caracteres"
-      )
-      .refine((val) => !val || /[A-Za-z]/.test(val), "Debe contener letras")
-      .refine((val) => !val || /[0-9]/.test(val), "Debe contener números")
-      .refine(
-        (val) => !val || /[^A-Za-z0-9]/.test(val),
-        "Debe contener símbolos"
-      ),
-    confirmPassword: z.string().optional(),
   })
-  .refine(
-    (data) => {
-      // Solo validar coincidencia si se ingresó una contraseña
-      if (data.password) {
-        return data.password === data.confirmPassword;
-      }
-      return true;
-    },
-    {
-      message: "Las contraseñas no coinciden",
-      path: ["confirmPassword"],
-    }
-  );
 
 type EditProfileFormData = z.infer<typeof editProfileSchema>;
 
@@ -64,17 +36,13 @@ interface EditProfileFormProps {
 export const EditProfileForm: React.FC<EditProfileFormProps> = ({
   onSuccess,
 }) => {
-  const auth = useAuth();
   const toast = useToast();
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    watch,
   } = useForm<EditProfileFormData>({
     resolver: zodResolver(editProfileSchema),
     // defaultValues: {
@@ -86,19 +54,6 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
     //   confirmPassword: "",
     // },
   });
-
-  const password = watch("password");
-  const confirmPassword = watch("confirmPassword");
-
-  const checks = useMemo(() => {
-    return {
-      length: (password?.length ?? 0) >= 8,
-      letters: /[A-Za-z]/.test(password ?? ""),
-      numbers: /[0-9]/.test(password ?? ""),
-      symbols: /[^A-Za-z0-9]/.test(password ?? ""),
-      match: password !== "" && password === confirmPassword,
-    };
-  }, [password, confirmPassword]);
 
   const onSubmit = async (data: EditProfileFormData) => {
     setLoading(true);

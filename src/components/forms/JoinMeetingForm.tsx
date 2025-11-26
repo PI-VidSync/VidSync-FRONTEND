@@ -48,7 +48,7 @@ const JoinMeetingForm: React.FC = () => {
 
       navigate(`/meeting/${meetingCode}`);
       toast.success("Unido a la reunión exitosamente");
-    } catch (error) {
+    } catch {
       toast.error("Error al unirse a la reunión");
       return;
     } finally {

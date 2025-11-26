@@ -1,4 +1,4 @@
-import { Mic, MicOff, User, Video, VideoOff } from "lucide-react";
+import { Mic, MicOff, User } from "lucide-react";
 import "./MeetCard.scss"
 
 type StageParticipant = {

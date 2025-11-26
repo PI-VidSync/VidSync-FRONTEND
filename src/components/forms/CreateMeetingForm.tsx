@@ -48,7 +48,7 @@ const CreateMeetingForm: React.FC = () => {
 
       navigate(`/meeting/${meetingCode}`);
       toast.success("Reunión creada exitosamente");
-    } catch (error) {
+    } catch {
       toast.error("Error al crear la reunión");
       return;
     } finally {
