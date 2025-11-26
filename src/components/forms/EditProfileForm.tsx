@@ -164,7 +164,7 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
         icon={<Calendar size={20} />}
       />
 
-      <div className="submit-container">
+      <div className="form-buttons">
         <button
           type="submit"
           className="btn btn-primary"

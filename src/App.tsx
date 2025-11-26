@@ -6,8 +6,6 @@ import RegisterPage from './pages/auth/RegisterPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
-import CreateMeetingPage from './components/forms/CreateMeetingForm';
-import JoinMeetingPage from './components/forms/JoinMeetingForm';
 import ProfilePage from './pages/profile/ProfilePage';
 // import EditProfilePage from './pages/EditProfilePage';
 import HomePage from './pages/home/HomePage';

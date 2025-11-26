@@ -1,46 +1,85 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./CreateMeetingForm.scss";
+import { z } from "zod";
+import { FormField } from "../ui/input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useToast } from "../../hooks/useToast";
+import { Modal } from "bootstrap";
+import "./MeetingForm.scss";
+
+const createMeetingSchema = z.object({
+  meetingName: z.string().min(1, "El nombre de la reunión es requerido")
+});
+
+type CreateMeetingFormData = z.infer<typeof createMeetingSchema>;
 
 const CreateMeetingForm: React.FC = () => {
-  const [meetingName, setMeetingName] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const toast = useToast();
 
-  const handleCreate = () => {
-    const cleanName = meetingName.trim();
-    if (!cleanName) return;
+  const {
+    handleSubmit,
+    register,
+    formState: { errors },
+  } = useForm<CreateMeetingFormData>({
+    resolver: zodResolver(createMeetingSchema),
+    defaultValues: {
+      meetingName: "",
+    },
+  });
 
-    const meetingCode = encodeURIComponent(cleanName);
-    navigate(`/meeting/${meetingCode}`);
+  const onSubmit = (data: CreateMeetingFormData) => {
+    try {
+      setLoading(true);
+      const validationResult = createMeetingSchema.safeParse(data);
+      if (!validationResult.success) {
+        toast.error("Nombre de reunión inválido");
+        return;
+      }
+      const meetingCode = encodeURIComponent(data.meetingName.trim());
+
+      const modalEl = document.getElementById("modal-create-meeting");
+      if (modalEl) {
+        const modal = Modal.getInstance(modalEl) || new Modal(modalEl);
+        modal.hide();
+      }
+
+      navigate(`/meeting/${meetingCode}`);
+      toast.success("Reunión creada exitosamente");
+    } catch (error) {
+      toast.error("Error al crear la reunión");
+      return;
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="create-meeting-page">
-      {/* MODAL CENTRADO */}
-      <div className="modal-container">
-        <div className="create-modal">
-          <h2>Crear una videollamada</h2>
-          <p className="modal-subtitle">
-            Crea una reunión para reunirte con tus amigos y compañeros vía chat, audio y video
-          </p>
+    <div>
+      <p className="modal-subtitle">
+        Crea una reunión para reunirte con tus amigos y compañeros vía chat, audio y video
+      </p>
 
-          <input
-            type="text"
-            placeholder="Ingresa el nombre de la reunión"
-            value={meetingName}
-            onChange={(e) => setMeetingName(e.target.value)}
-            className="meeting-input"
-          />
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <FormField
+          label="Nombre de la reunión"
+          type="text"
+          register={register("meetingName")}
+          error={errors.meetingName}
+        />
 
+        <div className="form-buttons">
           <button
-            onClick={handleCreate}
-            className="btn-create"
-            disabled={!meetingName.trim()}
+            type="submit"
+            className="btn btn-primary"
+            disabled={loading}
           >
-            Crear videollamada
+            {loading ? "Creando..." : "Crear videollamada"}
           </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 };

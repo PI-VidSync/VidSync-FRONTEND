@@ -1,10 +1,10 @@
 .edit-profile-form {
   display: flex;
   flex-direction: column;
+}
 
-
-  .submit-container {
+.form-buttons {
     display: flex;
+    gap: 2rem;
     justify-content: flex-end;
   }
-}

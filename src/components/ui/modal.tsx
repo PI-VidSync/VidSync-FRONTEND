@@ -2,8 +2,8 @@ interface ModalProps {
   name: string;
   title: string;
   triggerText: string;
-  confirmText?: string;
   children: React.ReactNode;
+  confirmText?: string;
   danger?: boolean;
   onFinish?: () => void;
   size?: "sm"|  "md" | "lg" | "xl";

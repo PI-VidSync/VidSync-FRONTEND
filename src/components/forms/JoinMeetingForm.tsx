@@ -1,47 +1,85 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./JoinMeetingForm.scss";
+import { z } from "zod";
+import { FormField } from "../ui/input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useToast } from "../../hooks/useToast";
+import { Modal } from "bootstrap";
+import "./MeetingForm.scss";
+
+const joinMeetingSchema = z.object({
+  meetingCode: z.string().min(1, "El código de la reunión es requerido")
+});
+
+type JoinMeetingFormData = z.infer<typeof joinMeetingSchema>;
 
 const JoinMeetingForm: React.FC = () => {
-  const [meetingCode, setMeetingCode] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const toast = useToast();
 
-  const handleJoin = () => {
-    const cleanCode = meetingCode.trim();
-    if (!cleanCode) return;
-    navigate(`/meeting/${encodeURIComponent(cleanCode)}`);
+  const {
+    handleSubmit,
+    register,
+    formState: { errors },
+  } = useForm<JoinMeetingFormData>({
+    resolver: zodResolver(joinMeetingSchema),
+    defaultValues: {
+      meetingCode: "",
+    },
+  });
+
+  const onSubmit = (data: JoinMeetingFormData) => {
+    try {
+      setLoading(true);
+      const validationResult = joinMeetingSchema.safeParse(data);
+      if (!validationResult.success) {
+        toast.error("Código de reunión inválido");
+        return;
+      }
+      const meetingCode = encodeURIComponent(data.meetingCode.trim());
+
+      const modalEl = document.getElementById("modal-join-meeting");
+      if (modalEl) {
+        const modal = Modal.getInstance(modalEl) || new Modal(modalEl);
+        modal.hide();
+      }
+
+      navigate(`/meeting/${meetingCode}`);
+      toast.success("Unido a la reunión exitosamente");
+    } catch (error) {
+      toast.error("Error al unirse a la reunión");
+      return;
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="join-meeting">
-      {/* CONTENIDO */}
-      <main className="main-content">
-        <div className="modal-card">
-          <h1>Unirme a una videollamada</h1>
-          <p>
-            Unirme a una videollamada creada por otra persona mediante el código de reunión
-          </p>
+    <div>
+      <p className="modal-subtitle">
+        Unirme a una videollamada creada por otra persona mediante el código de reunión
+      </p>
 
-          <div className="form-group">
-            <input
-              type="text"
-              placeholder="Ingresa el código de la reunión"
-              value={meetingCode}
-              onChange={(e) => setMeetingCode(e.target.value)}
-              className="code-input"
-              autoFocus
-            />
-          </div>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <FormField
+          label="Código de la reunión"
+          type="text"
+          register={register("meetingCode")}
+          error={errors.meetingCode}
+        />
 
+        <div className="form-buttons">
           <button
-            onClick={handleJoin}
-            disabled={!meetingCode.trim()}
-            className="join-btn"
+            type="submit"
+            className="btn btn-primary"
+            disabled={loading}
           >
-            Unirme a la videollamada
+            {loading ? "Uniendo..." : "Unirse a la videollamada"}
           </button>
         </div>
-      </main>
+      </form>
     </div>
   );
 };
