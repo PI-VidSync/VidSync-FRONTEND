@@ -1,6 +1,8 @@
+@use "../styles/variables" as *;
+
 .join-meeting {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0d9aa9 0%, #006f7c 100%);
+  background: $primary;
   display: flex;
   flex-direction: column;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;

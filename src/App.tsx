@@ -11,6 +11,7 @@ import JoinMeetingPage from './pages/JoinMeetingPage';
 import ProfilePage from './pages/profile/ProfilePage';
 // import EditProfilePage from './pages/EditProfilePage';
 import HomePage from './pages/home/HomePage';
+import IntoMeeting from './pages/IntoMeeting';
 
 import { AuthProvider } from './auth/AuthContext';
 import ProtectedRoute from './components/routes/ProtectedRoute';
@@ -40,6 +41,7 @@ function App() {
               <Route path="/join-meeting" element={<JoinMeetingPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               {/* <Route path="/profile/edit" element={<EditProfilePage />} /> */}
+              <Route path="/meeting/:meetingCode" element={<IntoMeeting />} />
             </Route>
             <Route path="*" element={<NotFoundPage />} />
           </Route>
