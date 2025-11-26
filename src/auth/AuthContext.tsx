@@ -14,7 +14,6 @@ type AuthContextType = {
   isAuthenticated: boolean;
   currentUser: User | null;
   loading: boolean;
-  userToken: string | null;
   login: (email: string, password: string) => Promise<void>;
   register: (user: UserRegister) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
@@ -27,22 +26,34 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [userToken, setUserToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
 
-      if (user) {
-        const token = await user.getIdToken();
-        const data = await verifyToken(token);
-        setUserToken(token);
-      } else {
-        setUserToken(null);
+      try {
+        if (user) {
+          const token = await user.getIdToken();
+          const data = await verifyToken(token);
+          if (!data) {
+            console.error('Invalid token data');
+            setCurrentUser(null);
+            return;
+          } else if (data.exp && new Date(data.exp * 1000) < new Date()) {
+            console.error('Token expired');
+            setCurrentUser(null);
+            return;
+          } else {
+            setCurrentUser(user);
+          }
+        }
+      } catch (error) {
+        console.error('Error verifying token:', error);
+        setCurrentUser(null);
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -51,45 +62,55 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string): Promise<void> => {
     try {
       await loginWithEmail(email, password);
-    } catch (error: any) {
-      console.error('Error en login:', error);
-      throw new Error(error.message || 'Error al iniciar sesión');
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Error en login:', error);
+        throw new Error(error.message || 'Error al iniciar sesión');
+      }
     }
   };
 
   const register = async (user: UserRegister): Promise<void> => {
     try {
       await registerWithEmail(user);
-    } catch (error: any) {
-      console.error('Error en registro:', error);
-      throw new Error(error.message || 'Error al registrarse');
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Error en registro:', error);
+        throw new Error(error.message || 'Error al registrarse');
+      }
     }
   };
 
   const handleGoogleLogin = async (): Promise<void> => {
     try {
       await loginWithGoogle();
-    } catch (error: any) {
-      console.error('Error con Google:', error);
-      throw new Error(error.message || 'Error al iniciar sesión con Google');
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Error con Google:', error);
+        throw new Error(error.message || 'Error al iniciar sesión con Google');
+      }
     }
   };
 
   const handleGithubLogin = async (): Promise<void> => {
     try {
       await loginWithGithub();
-    } catch (error: any) {
-      console.error('Error con Github:', error);
-      throw new Error(error.message || 'Error al iniciar sesión con Github');
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Error con Github:', error);
+        throw new Error(error.message || 'Error al iniciar sesión con Github');
+      }
     }
   };
 
   const handleLogout = async (): Promise<void> => {
     try {
       await firebaseLogout();
-    } catch (error: any) {
-      console.error('Error al cerrar sesión:', error);
-      throw new Error(error.message || 'Error al cerrar sesión');
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Error al cerrar sesión:', error);
+        throw new Error(error.message || 'Error al cerrar sesión');
+      }
     }
   };
 
@@ -107,7 +128,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isAuthenticated: !!currentUser,
     currentUser,
     loading,
-    userToken,
     login,
     register,
     loginWithGoogle: handleGoogleLogin,

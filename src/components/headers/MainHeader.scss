@@ -6,16 +6,16 @@
   left: 0;
   right: 0;
   height: 64px;
-  display: flex;  
+  display: flex;
   padding: 0 1.3rem;
   align-items: center;
   justify-content: space-between;
-  z-index: 1100;
-  box-shadow: 0 16px 32px rgba(0,0,0,0.3);
+  z-index: 10;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3);
 
   img {
     height: 36px;
-    display:inline-block;
+    display: inline-block;
   }
 }
 
@@ -23,8 +23,22 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+
+
 }
 
 @media (max-width: 768px) {
-  .main-header-center { position: static; transform:none; margin-left: auto; }
+  .main-header {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  }
+  
+  .main-header-center {
+    position: static;
+    transform: none;
+    margin-left: auto;
+  }
+
+  .btn-text {
+    display: none;
+  }
 }

@@ -21,8 +21,12 @@ const MainHeader: React.FC = () => {
       </Link>
 
       <div className="main-header-buttons">
-        <Link to="/profile" className="btn btn-primary"><User2 size={24} />{currentUser?.displayName}</Link>
-        <Link onClick={handleLogout} to="/login" className="btn btn-white"><LogOut size={24} />Cerrar sesión</Link>
+        <Link to="/profile" className="btn btn-primary">
+          <User2 size={24} /><span className="btn-text">{currentUser?.displayName}</span>
+        </Link>
+        <Link onClick={handleLogout} to="/login" className="btn btn-white">
+          <LogOut size={24} /><span className="btn-text">Cerrar sesión</span>
+        </Link>
       </div>
     </header>
   );
