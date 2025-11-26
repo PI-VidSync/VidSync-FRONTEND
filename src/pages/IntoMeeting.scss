@@ -50,6 +50,7 @@
   background: rgba(0, 104, 130, 0.95);
   box-shadow: inset 0 0 0 2px rgba(16, 210, 223, 0.2);
   text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .meeting-tile--primary {
@@ -92,6 +93,11 @@
   gap: 0.55rem;
   bottom: 1rem;
   right: 1rem;
+}
+
+.meeting-tile:hover {
+  transform: translateY(-6px);
+  box-shadow: inset 0 0 0 2px rgba(16, 210, 223, 0.2), 0 18px 28px rgba(0, 0, 0, 0.25);
 }
 
 .media-state {
