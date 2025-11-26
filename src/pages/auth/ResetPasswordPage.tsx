@@ -94,7 +94,7 @@ const ResetPasswordPage: React.FC = () => {
             icon={<Lock size={20} />}
             endIcon={
               {
-                activeIcon: <Eye size={20} />,
+                icon: <Eye size={20} />,
                 inactiveIcon: <EyeOff size={20} />,
                 onClick: () => setShowPassword(!showPassword),
                 isActive: showPassword,
@@ -110,7 +110,7 @@ const ResetPasswordPage: React.FC = () => {
             icon={<Lock size={20} />}
             endIcon={
               {
-                activeIcon: <Eye size={20} />,
+                icon: <Eye size={20} />,
                 inactiveIcon: <EyeOff size={20} />,
                 onClick: () => setShowConfirmPassword(!showConfirmPassword),
                 isActive: showConfirmPassword,

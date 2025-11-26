@@ -9,9 +9,9 @@ interface FormFieldProps {
   icon?: React.ReactNode;
   register: UseFormRegisterReturn;
   endIcon?: {
-    activeIcon: React.ReactNode;
-    inactiveIcon: React.ReactNode;
+    icon: React.ReactNode;
     onClick?: () => void;
+    inactiveIcon?: React.ReactNode;
     isActive?: boolean;
   };
 }
@@ -38,7 +38,7 @@ export const FormField: React.FC<FormFieldProps> = ({
           />
           <label>{label}</label>
         </div>
-        {endIcon && <button className="btn btn-input" type="button" onClick={endIcon.onClick}>{endIcon.isActive ? endIcon.activeIcon : endIcon.inactiveIcon}</button>}
+        {endIcon && <button className="btn btn-input" type="button" onClick={endIcon.onClick}>{endIcon.isActive !== false ? endIcon.icon : endIcon.inactiveIcon}</button>}
       </div>
       {error && <div className="error">{error.message}</div>}
     </div>
