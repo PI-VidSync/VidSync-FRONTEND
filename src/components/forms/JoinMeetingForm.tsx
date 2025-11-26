@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./JoinMeetingPage.scss";
+import "./JoinMeetingForm.scss";
 
-const JoinMeetingPage: React.FC = () => {
+const JoinMeetingForm: React.FC = () => {
   const [meetingCode, setMeetingCode] = useState("");
   const navigate = useNavigate();
 
@@ -46,4 +46,4 @@ const JoinMeetingPage: React.FC = () => {
   );
 };
 
-export default JoinMeetingPage;
+export default JoinMeetingForm;

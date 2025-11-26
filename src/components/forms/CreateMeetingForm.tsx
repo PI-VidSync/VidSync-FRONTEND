@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./CreateMeetingPage.scss";
+import "./CreateMeetingForm.scss";
 
-const CreateMeetingPage: React.FC = () => {
+const CreateMeetingForm: React.FC = () => {
   const [meetingName, setMeetingName] = useState("");
   const navigate = useNavigate();
 
@@ -45,4 +45,4 @@ const CreateMeetingPage: React.FC = () => {
   );
 };
 
-export default CreateMeetingPage;
+export default CreateMeetingForm;
