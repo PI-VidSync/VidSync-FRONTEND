@@ -7,11 +7,11 @@ const CreateMeetingPage: React.FC = () => {
   const navigate = useNavigate();
 
   const handleCreate = () => {
-    if (meetingName.trim()) {
-      // Aquí iría la lógica real para crear la reunión
-      alert(`¡Reunión "${meetingName}" creada con éxito!`);
-      // navigate("/meeting-room"); // cuando tengas la sala
-    }
+    const cleanName = meetingName.trim();
+    if (!cleanName) return;
+
+    const meetingCode = encodeURIComponent(cleanName);
+    navigate(`/meeting/${meetingCode}`);
   };
 
   return (

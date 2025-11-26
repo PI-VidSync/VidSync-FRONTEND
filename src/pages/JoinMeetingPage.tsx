@@ -7,10 +7,9 @@ const JoinMeetingPage: React.FC = () => {
   const navigate = useNavigate();
 
   const handleJoin = () => {
-    if (!meetingCode.trim()) return;
-    // Aquí iría la lógica real de validar el código y entrar a la reunión
-    alert(`Uniéndote a la reunión: ${meetingCode}`);
-    // navigate(`/meeting/${meetingCode}`);
+    const cleanCode = meetingCode.trim();
+    if (!cleanCode) return;
+    navigate(`/meeting/${encodeURIComponent(cleanCode)}`);
   };
 
   return (

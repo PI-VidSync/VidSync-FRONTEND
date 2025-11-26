@@ -1,0 +1,263 @@
+@use "../styles/variables" as *;
+
+.meeting-screen {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1.5rem 3rem;
+  background: $primary;
+}
+
+.meeting-screen__content {
+  width: 100%;
+  max-width: 1200px;
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: minmax(0, 1fr) 320px;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.meeting-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-height: 500px;
+  padding: 1.75rem;
+  border-radius: 20px;
+  border: 3px solid rgba(16, 210, 223, 0.75);
+  background: rgba(0, 70, 90, 0.85);
+  color: #effbfd;
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.25);
+
+  @media (max-width: 768px) {
+    padding: 1.35rem;
+  }
+}
+
+.meeting-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  border-radius: 18px;
+  border: 3px solid rgba(16, 210, 223, 0.75);
+  background: rgba(0, 104, 130, 0.95);
+  box-shadow: inset 0 0 0 2px rgba(16, 210, 223, 0.2);
+  text-align: center;
+}
+
+.meeting-tile--primary {
+  min-height: 260px;
+}
+
+.meeting-tile--secondary {
+  min-height: 170px;
+}
+
+.meeting-tile__name {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.32);
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+}
+
+.meeting-tile__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 82px;
+  height: 82px;
+  border-radius: 50%;
+  background: rgba(0, 55, 72, 0.9);
+  border: 4px solid rgba(16, 210, 223, 0.6);
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+}
+
+.meeting-tile__status {
+  position: absolute;
+  display: flex;
+  gap: 0.55rem;
+  bottom: 1rem;
+  right: 1rem;
+}
+
+.media-state {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(16, 210, 223, 0.25);
+  color: #e9fbff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+.media-state.is-off {
+  background: #c54b5b;
+  color: #ffffff;
+}
+
+.secondary-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.meeting-controls-container {
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+}
+
+.meeting-controls {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 0.85rem 1.5rem;
+  border-radius: 18px;
+  border: 3px solid rgba(16, 210, 223, 0.75);
+  background: rgba(0, 70, 90, 0.85);
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.25);
+}
+
+.control-button {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  border: 3px solid rgba(16, 210, 223, 0.9);
+  background: #ffffff;
+  color: #005f74;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+  }
+}
+
+.control-button.is-off {
+  background: #c54b5b;
+  border-color: #c54b5b;
+  color: #ffffff;
+}
+
+.control-button.is-hangup {
+  background: #c54b5b;
+  border-color: #c54b5b;
+  color: #ffffff;
+}
+
+.control-button.is-hangup:hover {
+  box-shadow: 0 18px 34px rgba(197, 75, 91, 0.45);
+}
+
+.chat-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.75rem 1.5rem;
+  border-radius: 22px;
+  border: 3px solid rgba(16, 210, 223, 0.65);
+  background: #f6fcfd;
+  box-shadow: 0 22px 38px rgba(0, 0, 0, 0.18);
+
+  @media (max-width: 1100px) {
+    max-width: 420px;
+    width: 100%;
+    margin: 0 auto;
+  }
+}
+
+.chat-header h2 {
+  font-size: 1.15rem;
+  color: #0b4b60;
+  margin: 0;
+}
+
+.chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+}
+
+.chat-message {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-width: 240px;
+}
+
+.chat-message--right {
+  margin-left: auto;
+  align-items: flex-end;
+}
+
+.chat-message__author {
+  font-size: 0.78rem;
+  color: #55656d;
+}
+
+.chat-message__bubble {
+  padding: 0.65rem 1rem;
+  border-radius: 14px;
+  background: #dfe4e7;
+  color: #1a2124;
+  font-size: 0.93rem;
+  line-height: 1.35;
+}
+
+.chat-message--right .chat-message__bubble {
+  background: #00aeca;
+  color: #ffffff;
+}
+
+.chat-input {
+  margin-top: auto;
+  display: flex;
+  gap: 0.85rem;
+}
+
+.chat-input input {
+  flex: 1;
+  border: 2px solid rgba(16, 210, 223, 0.7);
+  border-radius: 999px;
+  padding: 0.65rem 1.1rem;
+  background: #ffffff;
+  font-size: 0.95rem;
+  color: #0b4b60;
+
+  &::placeholder {
+    color: #7c8e94;
+  }
+}
+
+.chat-input button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: #00aeca;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 14px 28px rgba(0, 174, 202, 0.35);
+  cursor: pointer;
+}

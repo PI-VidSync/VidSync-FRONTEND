@@ -1,6 +1,8 @@
+@use "../styles/variables" as *;
+
 .create-meeting-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0d9aa9 0%, #007f8c 100%);
+  background: $primary;
   font-family: "Segoe UI", sans-serif;
   position: relative;
 }
@@ -98,7 +100,7 @@
 }
 
 .btn-create {
-  background: #00bfa5;
+  background: #22d3ee;
   color: white;
   width: 100%;
   padding: 1.1rem;
@@ -110,7 +112,7 @@
   transition: 0.3s;
 }
 .btn-create:hover {
-  background: #009688;
+  background: #0ea5e9;
 }
 .btn-create:disabled {
   background: #aaa;
