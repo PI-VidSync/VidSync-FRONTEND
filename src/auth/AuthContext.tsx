@@ -14,7 +14,6 @@ type AuthContextType = {
   isAuthenticated: boolean;
   currentUser: User | null;
   loading: boolean;
-  userToken: string | null;
   login: (email: string, password: string) => Promise<void>;
   register: (user: UserRegister) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
@@ -27,22 +26,34 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [userToken, setUserToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
 
-      if (user) {
-        const token = await user.getIdToken();
-        const data = await verifyToken(token);
-        setUserToken(token);
-      } else {
-        setUserToken(null);
+      try {
+        if (user) {
+          const token = await user.getIdToken();
+          const data = await verifyToken(token);
+          if (!data) {
+            console.error('Invalid token data');
+            setCurrentUser(null);
+            return;
+          } else if (data.exp && new Date(data.exp * 1000) < new Date()) {
+            console.error('Token expired');
+            setCurrentUser(null);
+            return;
+          } else {
+            setCurrentUser(user);
+          }
+        }
+      } catch (error) {
+        console.error('Error verifying token:', error);
+        setCurrentUser(null);
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -107,7 +118,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isAuthenticated: !!currentUser,
     currentUser,
     loading,
-    userToken,
     login,
     register,
     loginWithGoogle: handleGoogleLogin,

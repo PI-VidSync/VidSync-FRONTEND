@@ -2,6 +2,8 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import "./ProfilePage.scss";
+import { Modal } from "@/components/ui/modal";
+import EditProfileForm from "@/components/forms/EditProfileForm";
 
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
@@ -21,7 +23,7 @@ const ProfilePage: React.FC = () => {
               <img src={currentUser?.photoURL || ""} alt="avatar" />
             ) : (
               <div className="avatar-placeholder">
-                <span>{currentUser?.displayName?.split(' ')[0][0]}</span>
+                <span>{currentUser?.displayName ? currentUser?.displayName[0] : 'U'}</span>
               </div>
             )}
           </div>
@@ -30,7 +32,15 @@ const ProfilePage: React.FC = () => {
             <p>{currentUser?.email}</p>
           </div>
         </section>
-        <button className="btn btn-primary" onClick={() => navigate('/profile/edit')}>Editar Perfil</button>
+        <Modal 
+          name="edit-profile" 
+          title="Editar Perfil" 
+          triggerText="Editar Perfil"
+          confirmText="Guardar"
+          hideFooter
+        >
+          <EditProfileForm />
+        </Modal>
       </div>
 
       {/* Campos del perfil */}
@@ -61,7 +71,16 @@ const ProfilePage: React.FC = () => {
 
       {/* Botón eliminar cuenta */}
       <div className="delete-section">
-        <button className="btn btn-danger">Eliminar Cuenta</button>
+        <Modal 
+          name="delete-account" 
+          title="Eliminar Cuenta" 
+          triggerText="Eliminar Cuenta"
+          confirmText="Eliminar"
+          danger
+          onFinish={() => console.log('Eliminar cuenta')}
+        >
+          <p>¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.</p>
+        </Modal>
       </div>
     </div>
   );
