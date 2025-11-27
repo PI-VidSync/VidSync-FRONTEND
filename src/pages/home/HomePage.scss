@@ -1,0 +1,115 @@
+// Hero content
+.hero-content {
+  min-height: 80vh;
+  padding-block: 2rem;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+
+  .hero-logo {
+    height: 100px;
+    padding: 1.2rem;
+    border-radius: 12px;
+    background-color: white;
+  }
+
+  h1 {
+    font-size: 3.2rem;
+    text-shadow: 0 4px 1px rgba(0, 0, 0, 0.25);
+  }
+
+  p {
+    font-size: 1.2rem;
+    text-align: center;
+    color: #fff;
+  }
+
+  button {
+    font-size: 1.4rem;
+    padding: 0.6rem 1.2rem;
+  }
+}
+
+// Cards 
+.cards-section {
+  min-height: 50vh;
+  display: flex;
+  padding-block: 2rem;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+
+  .card {
+    width: 50%;
+    padding: 1.2rem;
+    border-radius: 12px;
+    background-color: white;
+    box-shadow: 0 4px 1px rgba(0, 0, 0, 0.25);
+  }
+
+  @media (max-width: 768px) {
+    .card {
+      width: 100%;
+    }
+  }
+}
+
+// Footer
+.footer {
+  background-color: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  padding-top: 2rem;
+  padding-bottom: 0.2rem;
+
+  // Sitemap
+  .sitemap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: start;
+    gap: 3rem;
+
+    .sitemap-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+    }
+
+    .sitemap-grid div {
+      h4 {
+        padding-bottom: 0.5rem;
+        border-bottom: 3px solid #fff;
+      }
+
+      .list-group {
+        padding-top: 0.5rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sitemap-grid {
+        grid-template-columns: repeat(1, 1fr);
+      }
+    }
+
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .sitemap-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  }
+
+  footer p {
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 0.8rem;
+  }
+}
