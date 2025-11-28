@@ -6,10 +6,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "../../hooks/useToast";
 import { Modal } from "bootstrap";
+import { createMeeting } from "@/service/api/meetings";
 import "./MeetingForm.scss";
 
 const createMeetingSchema = z.object({
-  meetingName: z.string().min(1, "El nombre de la reunión es requerido")
+  title: z.string().min(1, "El título es requerido"),
 });
 
 type CreateMeetingFormData = z.infer<typeof createMeetingSchema>;
@@ -25,32 +26,30 @@ const CreateMeetingForm: React.FC = () => {
     formState: { errors },
   } = useForm<CreateMeetingFormData>({
     resolver: zodResolver(createMeetingSchema),
-    defaultValues: {
-      meetingName: "",
-    },
+    defaultValues: { title: "" },
   });
 
-  const onSubmit = (data: CreateMeetingFormData) => {
+  const onSubmit = async (data: CreateMeetingFormData) => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const validationResult = createMeetingSchema.safeParse(data);
-      if (!validationResult.success) {
-        toast.error("Nombre de reunión inválido");
+      const resp: any = await createMeeting({ title: data.title.trim()});
+      if (!resp?.meeting?.meetingId) {
+        toast.error("Respuesta inválida del servidor");
         return;
       }
-      const meetingCode = encodeURIComponent(data.meetingName.trim());
 
+      // close modal if exists
       const modalEl = document.getElementById("modal-create-meeting");
       if (modalEl) {
         const modal = Modal.getInstance(modalEl) || new Modal(modalEl);
         modal.hide();
       }
 
+      const meetingCode = encodeURIComponent(resp.meeting.meetingId);
+      toast.success("Reunión creada");
       navigate(`/meeting/${meetingCode}`);
-      toast.success("Reunión creada exitosamente");
-    } catch {
-      toast.error("Error al crear la reunión");
-      return;
+    } catch (err: any) {
+      toast.error(err?.message ?? "Error al crear la reunión");
     } finally {
       setLoading(false);
     }
@@ -58,25 +57,19 @@ const CreateMeetingForm: React.FC = () => {
 
   return (
     <div>
-      <p className="modal-subtitle">
-        Crea una reunión para reunirte con tus amigos y compañeros vía chat, audio y video
-      </p>
+      <p className="modal-subtitle">Crea una nueva videollamada y comparte el código con los participantes</p>
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
         <FormField
-          label="Nombre de la reunión"
+          label="Título de la reunión"
           type="text"
-          register={register("meetingName")}
-          error={errors.meetingName}
+          register={register("title")}
+          error={errors.title}
         />
 
         <div className="form-buttons">
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={loading}
-          >
-            {loading ? "Creando..." : "Crear videollamada"}
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? "Creando..." : "Crear reunión"}
           </button>
         </div>
       </form>
