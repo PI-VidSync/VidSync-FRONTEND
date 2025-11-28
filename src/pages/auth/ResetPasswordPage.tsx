@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { useToast } from "@/hooks/useToast";
 import "./ResetPasswordPage.scss";
@@ -7,6 +7,7 @@ import { Eye, EyeOff, Lock, ArrowLeft } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField } from "@/components/ui/input";
+import { resetPasswordConfirm } from "@/service/firebase/reset-password";
 
 const resetPasswordSchema = z
   .object({
@@ -26,11 +27,18 @@ const resetPasswordSchema = z
 type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
 const ResetPasswordPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const oobCode = searchParams.get("oobCode");
   const navigate = useNavigate();
   const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  if (!oobCode) {
+    navigate("/forgot-password");
+    return null;
+  }
 
   const {
     register,
@@ -62,11 +70,9 @@ const ResetPasswordPage: React.FC = () => {
     setLoading(true);
     try {
       const validatedData = resetPasswordSchema.parse(data);
-      console.log("Datos validados:", validatedData);
-
+      await resetPasswordConfirm(oobCode, validatedData.password);
       toast.success("¡Contraseña actualizada exitosamente!");
-      // navigate("/login");
-
+      navigate("/login");
     } catch (error) {
       console.error(typeof error);
       if (error instanceof Error) {
