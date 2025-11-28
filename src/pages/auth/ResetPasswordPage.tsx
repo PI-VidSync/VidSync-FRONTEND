@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useToast } from "@/hooks/useToast";
 import "./ResetPasswordPage.scss";
-import { Eye, EyeOff, Lock } from "lucide-react";
+import { Eye, EyeOff, Lock, ArrowLeft } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField } from "@/components/ui/input";
@@ -25,6 +26,7 @@ const resetPasswordSchema = z
 type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
 const ResetPasswordPage: React.FC = () => {
+  const navigate = useNavigate();
   const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -80,6 +82,15 @@ const ResetPasswordPage: React.FC = () => {
   return (
     <div className="full-view">
       <div className="card reset-card">
+        {/* Botón de regreso */}
+        <button 
+          onClick={() => navigate("/")} 
+          className="btn-back-auth"
+        >
+          <ArrowLeft size={20} />
+          Volver al inicio
+        </button>
+
         <div className="reset-header">
           <img src="/logo.png" alt="VidSync" className="auth-logo" />
           <p className="subtitle">Cambiar contraseña</p>

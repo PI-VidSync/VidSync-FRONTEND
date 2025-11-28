@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useToast } from "@/hooks/useToast";
 import "./RegisterPage.scss";
-import { Eye, EyeOff, Lock, Mail, User, Calendar } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, User, Calendar, ArrowLeft } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField } from "@/components/ui/input";
@@ -103,6 +103,15 @@ const RegisterPage: React.FC = () => {
   return (
     <div className="full-view">
       <div className="card register-card">
+        {/* Botón de regreso */}
+        <button 
+          onClick={() => navigate("/")} 
+          className="btn-back-auth"
+        >
+          <ArrowLeft size={20} />
+          Volver al inicio
+        </button>
+
         <div className="register-header">
           <img src="/logo.png" alt="VidSync" className="auth-logo" />
           <p className="subtitle">
