@@ -93,3 +93,27 @@
     }
   }
 }
+.btn-back-auth {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  color: #029AB4;
+  border: none;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  align-self: flex-start;
+
+  &:hover {
+    color: #027a8f;
+    transform: translateX(-4px);
+  }
+
+  &:active {
+    transform: translateX(-2px);
+  }
+}

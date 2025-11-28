@@ -1,7 +1,5 @@
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { request } from "@/hooks/useApi";
 
 export async function register(user: UserRegister) {
-  const userCred = await createUserWithEmailAndPassword(auth, user.email, user.password);
-  return userCred.user;
+  await request("/register", "POST", user);
 }

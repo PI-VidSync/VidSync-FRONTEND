@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useToast } from "@/hooks/useToast";
 import "./LoginPage.scss";
-import { Eye, EyeOff, Lock, Mail } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail , ArrowLeft } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField } from "@/components/ui/input";
@@ -85,6 +85,13 @@ const LoginPage: React.FC = () => {
   return (
     <div className="full-view">
       <div className="card login-card">
+        <button 
+          onClick={() => navigate("/")} 
+          className="btn-back-auth"
+        >
+          <ArrowLeft size={20} />
+          Volver al inicio
+        </button>
         <div className="login-header">
           <img src="/logo.png" alt="VidSync" className="auth-logo" />
           <p className="subtitle">

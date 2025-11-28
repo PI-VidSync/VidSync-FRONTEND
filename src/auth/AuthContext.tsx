@@ -9,7 +9,7 @@ import {
 } from '@/service/firebase/login';
 import { logout as firebaseLogout } from '@/service/firebase/logout';
 import { register as registerWithEmail } from '@/service/firebase/register';
-import { verifyToken } from '@/service/api/auth';
+import { deleteUser, verifyToken } from '@/service/api/auth';
 type AuthContextType = {
   isAuthenticated: boolean;
   currentUser: User | null;
@@ -20,6 +20,7 @@ type AuthContextType = {
   loginWithGithub: () => Promise<void>;
   logout: () => Promise<void>;
   getToken: () => Promise<string | null>;
+  deleteAccount: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -106,11 +107,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const handleLogout = async (): Promise<void> => {
     try {
       await firebaseLogout();
+      setCurrentUser(null);
     } catch (error) {
       if (error instanceof Error) {
         console.error('Error al cerrar sesión:', error);
         throw new Error(error.message || 'Error al cerrar sesión');
       }
+    }
+  };
+
+  const handleDeleteAccount = async (): Promise<void> => {
+    if (!currentUser) {
+      throw new Error('No hay usuario autenticado');
+    }
+
+    try {
+      await deleteUser(currentUser.uid);
+      await firebaseLogout();
+      setCurrentUser(null);
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Error al eliminar la cuenta:', error);
+        throw new Error(error.message || 'Error al eliminar la cuenta');
+      }
+      throw error;
     }
   };
 
@@ -133,7 +153,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loginWithGoogle: handleGoogleLogin,
     loginWithGithub: handleGithubLogin,
     logout: handleLogout,
-    getToken
+    getToken,
+    deleteAccount: handleDeleteAccount,
   };
 
   if (loading) {

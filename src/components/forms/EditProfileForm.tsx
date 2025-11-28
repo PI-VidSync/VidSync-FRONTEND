@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { z } from "zod";
 import { useToast } from "@/hooks/useToast";
 import { Mail, User, Calendar } from "lucide-react";
@@ -17,31 +17,40 @@ type EditProfileFormData = z.infer<typeof editProfileSchema>;
 
 interface EditProfileFormProps {
   initialData?: {
-    name: string;
+    firstName: string;
     lastName: string;
     email: string;
     age: string | number;
   };
-  onSuccess?: (data: EditProfileFormData) => void;
+  onSubmit?: (data: EditProfileFormData) => Promise<void> | void;
 }
 
 const EditProfileForm: React.FC<EditProfileFormProps> = ({
-  initialData = { name: "", lastName: "", email: "", age: 13 },
-  onSuccess,
+  initialData = { firstName: "", lastName: "", email: "", age: 13 },
+  onSubmit,
 }) => {
   const toast = useToast();
   const [loading, setLoading] = useState(false);
 
-  const { register, handleSubmit } = useForm<EditProfileFormData>({
+  const { register, handleSubmit, reset } = useForm<EditProfileFormData>({
     defaultValues: {
-      firstName: initialData.name,
+      firstName: initialData.firstName,
       lastName: initialData.lastName,
       email: initialData.email,
       age: Number(initialData.age) || 13,
     },
   });
 
-  const onSubmit = async (data: EditProfileFormData) => {
+  useEffect(() => {
+    reset({
+      firstName: initialData.firstName,
+      lastName: initialData.lastName,
+      email: initialData.email,
+      age: Number(initialData.age) || 13,
+    });
+  }, [initialData.firstName, initialData.lastName, initialData.email, initialData.age, reset]);
+
+  const handleFormSubmit = async (data: EditProfileFormData) => {
     setLoading(true);
 
     const result = editProfileSchema.safeParse({
@@ -59,18 +68,21 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
     }
 
     try {
-      await new Promise((r) => setTimeout(r, 800));
+      if (onSubmit) {
+        await onSubmit(result.data);
+      }
+      reset(result.data);
       toast.success("¡Perfil actualizado!");
-      onSuccess?.(result.data);
-    } catch {
-      toast.error("Error al guardar");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Error al guardar";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form className="edit-profile-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+    <form className="edit-profile-form" onSubmit={handleSubmit(handleFormSubmit)} noValidate>
       <FormField label="Nombre" type="text" register={register("firstName")} icon={<User size={20} />} />
       <FormField label="Apellido" type="text" register={register("lastName")} icon={<User size={20} />} />
       <FormField label="Email" type="email" register={register("email")} icon={<Mail size={20} />} />

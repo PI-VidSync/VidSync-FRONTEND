@@ -3,10 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useToast } from "@/hooks/useToast";
 import "./RegisterPage.scss";
-import { Eye, EyeOff, Lock, Mail, User, Calendar } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, User, Calendar, ArrowLeft } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField } from "@/components/ui/input";
+import { useAuth } from "@/auth/AuthContext";
 
 const registerSchema = z
   .object({
@@ -47,6 +48,7 @@ const RegisterPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { register: registerUser } = useAuth();
 
   const {
     register,
@@ -82,7 +84,9 @@ const RegisterPage: React.FC = () => {
     setLoading(true);
     try {
       const validatedData = registerSchema.parse(data);
-      console.log("Datos validados:", validatedData);
+      const { firstName, lastName, email, age, password } = validatedData;
+
+      await registerUser({ firstName, lastName, email, age, password });
 
       toast.success("¡Registro exitoso!");
       toast.info("Por favor, inicia sesión con tus credenciales");
@@ -103,6 +107,15 @@ const RegisterPage: React.FC = () => {
   return (
     <div className="full-view">
       <div className="card register-card">
+        {/* Botón de regreso */}
+        <button 
+          onClick={() => navigate("/")} 
+          className="btn-back-auth"
+        >
+          <ArrowLeft size={20} />
+          Volver al inicio
+        </button>
+
         <div className="register-header">
           <img src="/logo.png" alt="VidSync" className="auth-logo" />
           <p className="subtitle">

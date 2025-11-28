@@ -1,98 +1,125 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getAuth, onAuthStateChanged, updateEmail, updateProfile } from "firebase/auth";
 import { useAuth } from "@/auth/AuthContext";
 import "./ProfilePage.scss";
 import { Modal } from "@/components/ui/modal";
 import EditProfileForm from "@/components/forms/EditProfileForm";
-import {
-  getAuth,
-  updateProfile,
-  updateEmail,
-  onAuthStateChanged,
-  deleteUser,
-} from "firebase/auth";
+import { useToast } from "@/hooks/useToast";
+
+type EditProfileData = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  age: number;
+};
+
+const DEFAULT_AGE = "13";
 
 const ProfilePage: React.FC = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, deleteAccount } = useAuth();
+  const toast = useToast();
+  const navigate = useNavigate();
   const [user, setUser] = useState(currentUser);
-  const [age, setAge] = useState("13");
+  const [age, setAge] = useState(DEFAULT_AGE);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [modalKey, setModalKey] = useState(0);
 
   useEffect(() => {
     const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (u) => setUser(u));
+    const unsubscribe = onAuthStateChanged(auth, (authUser) => {
+      setUser(authUser);
+    });
     return () => unsubscribe();
   }, []);
 
-  if (!user) return null;
+  useEffect(() => {
+    setUser(currentUser);
+  }, [currentUser]);
 
-  const fullName = user.displayName || "Usuario";
-  const parts = fullName.trim().split(" ");
-  const half = Math.ceil(parts.length / 2);
-  const firstName = parts.slice(0, half).join(" ");
-  const lastName = parts.slice(half).join(" ");
+  const { firstName, lastName, email } = useMemo(() => {
+    if (!user) {
+      return { firstName: "Usuario", lastName: "", email: "—" };
+    }
+
+    const displayName = user.displayName?.trim() ?? "";
+    const parts = displayName.split(" ").filter(Boolean);
+    const first = parts.shift() ?? "Usuario";
+    const last = parts.join(" ");
+
+    return {
+      firstName: first,
+      lastName: last,
+      email: user.email ?? "—",
+    };
+  }, [user]);
+
+  const avatarInitial = firstName.charAt(0).toUpperCase() || "U";
 
   const cleanModalArtifacts = () => {
     document.body.style.overflow = "";
     document.body.classList.remove("modal-open");
-
-    const backdrops = document.querySelectorAll(
-      ".modal-backdrop, .modal-overlay, [data-backdrop]"
-    );
-
-    backdrops.forEach((el) => el.remove());
+    document.querySelectorAll(".modal-backdrop, .modal-overlay, [data-backdrop]").forEach((element) => {
+      element.remove();
+    });
   };
 
-  const handleProfileUpdate = async (data: any) => {
+  const handleProfileUpdate = async (data: EditProfileData) => {
     const auth = getAuth();
-    const current = auth.currentUser;
-    if (!current) return;
+    const activeUser = auth.currentUser;
 
-    const newName = `${data.firstName} ${data.lastName}`.trim();
+    if (!activeUser) {
+      throw new Error("No hay usuario autenticado");
+    }
+
+    const sanitizedName = `${data.firstName} ${data.lastName}`.replace(/\s+/g, " ").trim();
+    const hasNameChange = sanitizedName !== (activeUser.displayName ?? "");
+    const hasEmailChange = data.email !== (activeUser.email ?? "");
 
     try {
-      if (newName !== current.displayName) {
-        await updateProfile(current, { displayName: newName });
+      if (hasNameChange) {
+        await updateProfile(activeUser, { displayName: sanitizedName });
       }
 
-      if (data.email && data.email !== current.email) {
-        await updateEmail(current, data.email);
+      if (hasEmailChange) {
+        await updateEmail(activeUser, data.email);
       }
 
-      setUser({
-        ...current,
-        displayName: newName,
-        email: data.email,
-      } as any);
-
-      setAge(data.age);
-
+      await activeUser.reload();
+      setUser(auth.currentUser);
+      setAge(String(data.age || DEFAULT_AGE));
       setModalKey(Date.now());
-
-      setTimeout(() => {
-        cleanModalArtifacts();
-      }, 50);
-    } catch (err) {
-      console.error("Error al actualizar perfil:", err);
+      window.setTimeout(cleanModalArtifacts, 75);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "No se pudo actualizar el perfil";
+      throw new Error(message);
     }
   };
 
   const handleDeleteAccount = async () => {
-    const auth = getAuth();
-    const current = auth.currentUser;
-    if (!current) return;
+    if (isDeleting) return;
 
     try {
-      await deleteUser(current);
-      console.log("Cuenta eliminada correctamente");
+      setIsDeleting(true);
+      await deleteAccount();
+      toast.success("Cuenta eliminada correctamente");
+      navigate("/");
     } catch (error) {
-      console.error("Error al eliminar la cuenta:", error);
+      const message = error instanceof Error ? error.message : "No se pudo eliminar la cuenta";
+      toast.error(message);
+    } finally {
+      setIsDeleting(false);
     }
   };
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="profile-card">
       <div className="greeting">
-        <h1>👋 Hola, {currentUser?.displayName?.split(' ')[0]}</h1>
+        <h1>👋 Hola, {firstName}</h1>
       </div>
 
       <section className="user-info">
@@ -101,16 +128,14 @@ const ProfilePage: React.FC = () => {
             <img src={user.photoURL} alt="Avatar" />
           ) : (
             <div className="avatar-placeholder">
-              <span>{firstName[0] || "U"}</span>
+              <span>{avatarInitial}</span>
             </div>
           )}
         </div>
 
         <div className="user-details">
-          <h2>
-            {firstName} {lastName}
-          </h2>
-          <p>{user.email}</p>
+          <h2>{lastName ? `${firstName} ${lastName}` : firstName}</h2>
+          <p>{email}</p>
         </div>
 
         <Modal
@@ -122,12 +147,12 @@ const ProfilePage: React.FC = () => {
         >
           <EditProfileForm
             initialData={{
-              name: firstName,
-              lastName: lastName,
-              email: user.email || "",
-              age: age,
+              firstName,
+              lastName,
+              email: email === "—" ? "" : email,
+              age,
             }}
-            onSuccess={handleProfileUpdate}
+            onSubmit={handleProfileUpdate}
           />
         </Modal>
       </section>
@@ -140,12 +165,12 @@ const ProfilePage: React.FC = () => {
 
         <div className="field">
           <span className="label">Apellido</span>
-          <span className="value">{lastName}</span>
+          <span className="value">{lastName || "—"}</span>
         </div>
 
         <div className="field">
           <span className="label">Correo electrónico</span>
-          <span className="value">{user.email}</span>
+          <span className="value">{email}</span>
         </div>
 
         <div className="field">
@@ -155,7 +180,7 @@ const ProfilePage: React.FC = () => {
 
         <div className="field">
           <span className="label">Contraseña</span>
-          <span className="value">••••••••</span>
+          <span className="value">••••••••••••••••</span>
         </div>
       </div>
 
@@ -166,14 +191,11 @@ const ProfilePage: React.FC = () => {
           name="delete-account"
           title="Eliminar Cuenta"
           triggerText="Eliminar Cuenta"
-          confirmText="Eliminar"
+          confirmText={isDeleting ? "Eliminando..." : "Eliminar"}
           danger
           onFinish={handleDeleteAccount}
         >
-          <p>
-            ¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se
-            puede deshacer.
-          </p>
+          <p>¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.</p>
         </Modal>
       </div>
     </div>
