@@ -7,3 +7,7 @@ export const verifyToken = async (token: string) => {
 export const deleteUser = async (uid: string) => {
   return request(`/auth/delete/${uid}`, "DELETE");
 };
+
+export const register = async (user: UserRegister) => {
+  return request("/auth/register", "POST", user);
+};

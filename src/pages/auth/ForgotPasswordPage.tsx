@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useToast } from "@/hooks/useToast";
 import "./ForgotPasswordPage.scss";
@@ -7,6 +7,7 @@ import { Mail } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField } from "@/components/ui/input";
+import { resetPassword } from "@/service/firebase/reset-password";
 
 const forgotPasswordSchema = z.object({
   email: z
@@ -20,6 +21,7 @@ type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 const ForgotPasswordPage: React.FC = () => {
   const toast = useToast();
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const {
     register,
@@ -36,10 +38,10 @@ const ForgotPasswordPage: React.FC = () => {
     setLoading(true);
     try {
       const validatedData = forgotPasswordSchema.parse(data);
-      console.log("Datos validados:", validatedData);
+      await resetPassword(validatedData.email);
 
       toast.success("¡Enlace de recuperación enviado! Revisa tu correo.");
-      // navigate("/login");
+      navigate("/login");
 
     } catch (error) {
       console.error(typeof error);

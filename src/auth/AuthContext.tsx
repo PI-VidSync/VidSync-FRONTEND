@@ -8,7 +8,7 @@ import {
   loginWithGithub,
 } from '@/service/firebase/login';
 import { logout as firebaseLogout } from '@/service/firebase/logout';
-import { register as registerWithEmail } from '@/service/firebase/register';
+import { register as registerWithEmail } from '@/service/api/auth';
 import { deleteUser, verifyToken } from '@/service/api/auth';
 type AuthContextType = {
   isAuthenticated: boolean;
