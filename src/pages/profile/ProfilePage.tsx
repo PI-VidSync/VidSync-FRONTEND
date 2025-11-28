@@ -1,11 +1,32 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import "./ProfilePage.scss";
 import { Modal } from "@/components/ui/modal";
 import EditProfileForm from "@/components/forms/EditProfileForm";
+import { useToast } from "@/hooks/useToast";
 
 const ProfilePage: React.FC = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, deleteAccount } = useAuth();
+  const toast = useToast();
+  const navigate = useNavigate();
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    if (isDeleting) return;
+
+    try {
+      setIsDeleting(true);
+      await deleteAccount();
+      toast.success("Cuenta eliminada correctamente");
+      navigate("/");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "No se pudo eliminar la cuenta";
+      toast.error(message);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className="profile-card">
@@ -73,9 +94,9 @@ const ProfilePage: React.FC = () => {
           name="delete-account" 
           title="Eliminar Cuenta" 
           triggerText="Eliminar Cuenta"
-          confirmText="Eliminar"
+          confirmText={isDeleting ? "Eliminando..." : "Eliminar"}
           danger
-          onFinish={() => console.log('Eliminar cuenta')}
+          onFinish={handleDeleteAccount}
         >
           <p>¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.</p>
         </Modal>

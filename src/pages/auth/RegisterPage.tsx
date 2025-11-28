@@ -7,6 +7,7 @@ import { Eye, EyeOff, Lock, Mail, User, Calendar, ArrowLeft } from "lucide-react
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField } from "@/components/ui/input";
+import { useAuth } from "@/auth/AuthContext";
 
 const registerSchema = z
   .object({
@@ -47,6 +48,7 @@ const RegisterPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { register: registerUser } = useAuth();
 
   const {
     register,
@@ -82,7 +84,9 @@ const RegisterPage: React.FC = () => {
     setLoading(true);
     try {
       const validatedData = registerSchema.parse(data);
-      console.log("Datos validados:", validatedData);
+      const { firstName, lastName, email, age, password } = validatedData;
+
+      await registerUser({ firstName, lastName, email, age, password });
 
       toast.success("¡Registro exitoso!");
       toast.info("Por favor, inicia sesión con tus credenciales");

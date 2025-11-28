@@ -13,8 +13,9 @@ const request = async <T>(url: string, method: string, body?: T) => {
   })
 
   if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.message)
+    const error = await response.json();
+    const message = error?.message ?? error?.error ?? "Error en la solicitud";
+    throw new Error(message);
   }
 
   if (response.status === 204) {
@@ -36,8 +37,9 @@ const requestHeader = async <T>(url: string, method: string, headers: { Authoriz
   })
 
   if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.message)
+    const error = await response.json();
+    const message = error?.message ?? error?.error ?? "Error en la solicitud";
+    throw new Error(message);
   }
 
   if (response.status === 204) {
