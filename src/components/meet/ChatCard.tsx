@@ -120,9 +120,9 @@ export const ChatPanel: React.FC = () => {
     <aside className="card chat-panel">
       <h2 className="card-header">Mensajes</h2>
 
-      <div ref={listRef} className="chat-messages" style={{ maxHeight: 360, overflowY: "auto" }}>
+      <div ref={listRef} className="chat-messages">
         {messages.length === 0 ? (
-          <div className="text-muted" style={{ padding: 12 }}>No hay mensajes todavía</div>
+          <div className="text-muted">No hay mensajes todavía</div>
         ) : messages.map((message) => (
           <ChatMessage key={message.id} {...message} currentUser={usernameRef.current} />
         ))}
@@ -151,7 +151,14 @@ const ChatMessage: React.FC<ChatMessage & { currentUser?: string }> = ({ author,
     <div className={className}>
       {!isOwn && <span className="chat-message__author">{author}</span>}
       <div className="chat-message__bubble">{message}</div>
-      {timestamp && <div style={{ fontSize: 10, color: "#889096", marginTop: 4 }}>{new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</div>}
+      {timestamp &&
+        <div className="chat-timestamp">
+          {new Date(timestamp)
+            .toLocaleTimeString(
+              [], { hour: "2-digit", minute: "2-digit" }
+            )
+          }
+        </div>}
     </div>
   );
 };
