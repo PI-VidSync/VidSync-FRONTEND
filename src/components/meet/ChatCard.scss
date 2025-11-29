@@ -4,6 +4,7 @@
   padding: 0;
   border-radius: 16px;
   box-shadow: 0 22px 38px rgba(0, 0, 0, 0.18);
+  grid-template-rows: auto 1fr auto;
 
   h2 {
     font-size: 1.15rem;
@@ -17,6 +18,7 @@
     flex-direction: column;
     gap: 0.65rem;
     height: 100%;
+    overflow-y: auto;
   }
 
   .card-footer {
@@ -43,6 +45,12 @@
     color: #1a2124;
     font-size: 0.93rem;
     line-height: 1.2;
+  }
+
+  .chat-timestamp {
+    font-size: 10px;
+    color: #889096;
+    margin-top: 2px;
   }
 }
 
