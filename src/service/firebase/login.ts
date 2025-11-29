@@ -1,10 +1,15 @@
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth, googleProvider, githubProvider } from "../../lib/firebase";
 import { signInWithPopup } from "firebase/auth";
+import { mapFirebaseAuthError } from "./errors";
 
 export async function login(email: string, password: string) {
-  const userCred = await signInWithEmailAndPassword(auth, email, password);
-  return userCred.user;
+  try {
+    const userCred = await signInWithEmailAndPassword(auth, email, password);
+    return userCred.user;
+  } catch (error) {
+    throw new Error(mapFirebaseAuthError(error));
+  }
 }
 
 export async function loginWithGoogle() {
