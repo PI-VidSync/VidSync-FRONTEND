@@ -6,11 +6,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import "./ChatCard.scss";
 import { socket } from "@/service/sockets/socketManager";
+import { setCookie, getCookie, refreshCookie, deleteCookie } from "@/utils/cookie";
 
 type ChatMessage = {
   id: string;
   message: string;
-  author?: string; // will store display name (not internal userId)
+  author?: string; // display name
   timestamp?: string;
 };
 
@@ -20,48 +21,73 @@ const chatSchema = z.object({
 
 type ChatFormSchema = z.infer<typeof chatSchema>;
 
-export const ChatPanel: React.FC = () => {
+// helper: try to read meeting id from URL path (e.g. /meeting/:id or last segment)
+function getRoomFromUrl(): string {
+  try {
+    const parts = window.location.pathname.split("/").map(p => p.trim()).filter(Boolean);
+    if (!parts.length) return "";
+    const idx = parts.findIndex(p => p.toLowerCase() === "meeting" || p.toLowerCase() === "meet");
+    if (idx !== -1 && parts.length > idx + 1) return parts[idx + 1];
+    return parts[parts.length - 1];
+  } catch {
+    return "";
+  }
+}
+
+export const ChatPanel: React.FC<{ meetingId: string }> = ({ meetingId }) => {
   const usernameRef = useRef<string>(localStorage.getItem("chat_username") || `user-${Math.random().toString(36).slice(2, 8)}`);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const listRef = useRef<HTMLDivElement | null>(null);
   const pendingIdsRef = useRef<Set<string>>(new Set());
+  // track which room we joined to avoid duplicate join/leave
+  const joinedRoomRef = useRef<string | null>(null);
 
-  const {
-    register,
-    handleSubmit,
-    reset
-  } = useForm<ChatFormSchema>({
+  const { register, handleSubmit, reset } = useForm<ChatFormSchema>({
     resolver: zodResolver(chatSchema),
     defaultValues: { message: "" }
   });
 
+  // attempt to join on mount using prop -> cookies -> URL
   useEffect(() => {
-    localStorage.setItem("chat_username", usernameRef.current);
-    socket.emit("newUser", usernameRef.current);
+    const candidateRoom = (meetingId ?? "").toString().trim() || getCookie("chat_room") || getRoomFromUrl();
+    if (!candidateRoom) {
+      console.warn("ChatPanel: no meetingId available on mount, will not auto-join");
+      return;
+    }
+
+    const room = candidateRoom;
+    // avoid re-joining same room repeatedly
+    if (joinedRoomRef.current !== room) {
+      joinedRoomRef.current = room;
+      // persist room and username using cookies only
+      setCookie("chat_room", room, 7);
+      setCookie("chat_username", usernameRef.current, 7);
+      console.log("ChatPanel: auto-joining room", room);
+      socket.emit("joinRoom", room, { uid: usernameRef.current, name: usernameRef.current });
+    }
+
+    // refresh cookie on activity to extend expiry
+    const onActivity = () => refreshCookie("chat_room", 7);
+    window.addEventListener("mousemove", onActivity);
+    window.addEventListener("keydown", onActivity);
+    window.addEventListener("click", onActivity);
 
     const onMessage = (payload: any) => {
-      // prefer explicit display name fields if provided by server
       const displayName = payload && (payload.name ?? payload.displayName ?? payload.userName ?? payload.userId) ? (payload.name ?? payload.displayName ?? payload.userName ?? payload.userId) : "unknown";
       const clientId = payload && payload.clientId ? payload.clientId : undefined;
       const ts = payload && payload.timestamp ? payload.timestamp : Date.now();
       const msgId = clientId ? clientId : `${displayName}-${ts}`;
-
-      // determine whether this message is from the current local user (compare display names)
       const isOwn = displayName === usernameRef.current;
 
       const incoming: ChatMessage = {
         id: msgId,
         message: payload.message,
-        // only set author (display name) when not own message
         author: isOwn ? undefined : displayName,
         timestamp: payload.timestamp ?? new Date().toISOString()
       };
 
-      // if we have an optimistic message with same clientId, replace it
       if (clientId && pendingIdsRef.current.has(clientId)) {
-        setMessages(prev =>
-          prev.map(m => (m.id === clientId ? incoming : m))
-        );
+        setMessages(prev => prev.map(m => (m.id === clientId ? incoming : m)));
         pendingIdsRef.current.delete(clientId);
         return;
       }
@@ -77,20 +103,48 @@ export const ChatPanel: React.FC = () => {
     socket.on("usersOnline", onUsersOnline);
 
     return () => {
+      if (joinedRoomRef.current === room) {
+        console.log("ChatPanel: leaving room", room);
+        socket.emit("leaveRoom", room);
+        // remove persisted cookies when leaving the room
+        deleteCookie("chat_room");
+        deleteCookie("chat_username");
+        joinedRoomRef.current = null;
+      }
+      window.removeEventListener("mousemove", onActivity);
+      window.removeEventListener("keydown", onActivity);
+      window.removeEventListener("click", onActivity);
       socket.off("chat:message", onMessage);
       socket.off("usersOnline", onUsersOnline);
     };
-  }, []);
+  }, [meetingId]);
 
-  // auto-scroll
   useEffect(() => {
     if (!listRef.current) return;
     listRef.current.scrollTop = listRef.current.scrollHeight;
   }, [messages]);
 
+  // before sending, ensure we have a room (try joinedRef -> localStorage -> URL), auto-join if needed
   const onSubmit = handleSubmit((data) => {
     const trimmed = data.message.trim();
     if (!trimmed) return;
+
+    let room = joinedRoomRef.current || getCookie("chat_room") || getRoomFromUrl();
+    room = room?.toString().trim() || "";
+
+    if (!room) {
+      console.warn("chat:message received without room, ignoring (no room available).");
+      // optional: show UI notification instead of silently ignoring
+      return;
+    }
+
+    // if not joined yet, join now
+    if (joinedRoomRef.current !== room) {
+      joinedRoomRef.current = room;
+      setCookie("chat_room", room, 7);
+      socket.emit("joinRoom", room, { uid: usernameRef.current, name: usernameRef.current });
+      console.log("ChatPanel: joined room before send", room);
+    }
 
     const clientId = (crypto && (crypto as any).randomUUID)
       ? (crypto as any).randomUUID()
@@ -99,19 +153,22 @@ export const ChatPanel: React.FC = () => {
     const timestamp = new Date().toISOString();
 
     const payload = {
-      userId: usernameRef.current, // keep for server
+      userId: usernameRef.current,
       message: trimmed,
       timestamp,
-      clientId
+      clientId,
+      room // ensure server receives room
     };
 
     pendingIdsRef.current.add(clientId);
-    // optimistic update: show as own message (author undefined)
     setMessages(prev => [
       ...prev,
       { id: clientId, message: payload.message, author: undefined, timestamp: payload.timestamp }
     ]);
 
+    // refresh cookie on send to extend expiry and then emit
+    refreshCookie("chat_room", 7);
+    refreshCookie("chat_username", 7);
     socket.emit("chat:message", payload);
     reset();
   });
@@ -144,7 +201,6 @@ export const ChatPanel: React.FC = () => {
 };
 
 const ChatMessage: React.FC<ChatMessage & { currentUser?: string }> = ({ author, message, timestamp, currentUser }) => {
-  // author now contains display name (or undefined for   own messages)
   const isOwn = author === undefined || author === currentUser;
   const className = `chat-message chat-message--${isOwn ? "right" : "left"}`;
   return (

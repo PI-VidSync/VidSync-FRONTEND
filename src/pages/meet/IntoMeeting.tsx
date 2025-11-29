@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Mic, MicOff, PhoneOff, Video, VideoOff } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { ChatPanel } from "@/components/meet/ChatCard";
 import "./IntoMeeting.scss";
 import { MeetCard } from "@/components/meet/MeetCard";
+import { deleteCookie } from "@/utils/cookie"; // new import
 
 type StageParticipant = {
   id: string;
@@ -42,13 +43,36 @@ const attendeeTiles: StageParticipant[] = [
 
 const IntoMeeting: React.FC = () => {
   const navigate = useNavigate();
+  const { meetingId } = useParams<{ meetingId: string }>(); // get meeting id from route params
   const [micEnabled, setMicEnabled] = useState(false);
   const [videoEnabled, setVideoEnabled] = useState(false);
+
+  // debug to confirm route param
+  useEffect(() => {
+    console.log("IntoMeeting mounted, meetingId =", meetingId);
+  }, [meetingId]);
+
+  // remove cookies when user closes tab/window
+  useEffect(() => {
+    const onBeforeUnload = () => {
+      deleteCookie("chat_room");
+      deleteCookie("chat_username");
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, []);
+
+  const handleHangup = () => {
+    // delete chat cookies when leaving the call
+    deleteCookie("chat_room");
+    deleteCookie("chat_username");
+    navigate("/dashboard");
+  };
 
   const controls: ControlButton[] = [
     { id: "mic", enabled: micEnabled, onClick: () => setMicEnabled((prev) => !prev) },
     { id: "video", enabled: videoEnabled, onClick: () => setVideoEnabled((prev) => !prev) },
-    { id: "hangup", onClick: () => navigate("/dashboard") },
+    { id: "hangup", onClick: handleHangup }, // use handler that clears cookies
   ];
 
   return (
@@ -105,7 +129,8 @@ const IntoMeeting: React.FC = () => {
         </div>
       </div>
 
-      <ChatPanel />
+      {/* pass meetingId to chat panel so it joins the correct room */}
+      <ChatPanel meetingId={meetingId ?? ""} />
     </section>
   );
 };
