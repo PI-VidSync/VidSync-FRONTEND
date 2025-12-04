@@ -1,9 +1,12 @@
 import React from "react";
-import { useAuth } from "@/auth/AuthContext";
+import { useAuth } from "@/auth/useAuth";
 import "./ProfilePage.scss";
 import { Modal } from "@/components/ui/modal";
 import EditProfileForm from "@/components/forms/EditProfileForm";
 
+/**
+ * Profile page displaying user info and actions to edit or delete the account.
+ */
 const ProfilePage: React.FC = () => {
   const { currentUser } = useAuth();
 

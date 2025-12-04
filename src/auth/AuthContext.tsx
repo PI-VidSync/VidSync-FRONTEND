@@ -10,6 +10,10 @@ import {
 import { logout as firebaseLogout } from '@/service/firebase/logout';
 import { register as registerWithEmail } from '@/service/firebase/register';
 import { verifyToken } from '@/service/api/auth';
+/**
+ * Authentication context public API.
+ * Provides the current Firebase user and auth actions.
+ */
 type AuthContextType = {
   isAuthenticated: boolean;
   currentUser: User | null;
@@ -24,6 +28,12 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * React provider that initializes Firebase auth listeners
+ * and exposes auth methods and state to the application.
+ *
+ * @param children React subtree to wrap with authentication context
+ */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -59,6 +69,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => unsubscribe();
   }, []);
 
+  /**
+   * Sign in using email/password.
+   * @param email Email address
+   * @param password Password
+   */
   const login = async (email: string, password: string): Promise<void> => {
     try {
       await loginWithEmail(email, password);
@@ -70,6 +85,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  /**
+   * Register a user using email/password.
+   * @param user User payload with credentials
+   */
   const register = async (user: UserRegister): Promise<void> => {
     try {
       await registerWithEmail(user);
@@ -81,6 +100,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  /** Sign in using Google OAuth popup. */
   const handleGoogleLogin = async (): Promise<void> => {
     try {
       await loginWithGoogle();
@@ -92,6 +112,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  /** Sign in using GitHub OAuth popup. */
   const handleGithubLogin = async (): Promise<void> => {
     try {
       await loginWithGithub();
@@ -103,6 +124,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  /** Logout the current user. */
   const handleLogout = async (): Promise<void> => {
     try {
       await firebaseLogout();
@@ -114,6 +136,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  /**
+   * Get the current user's ID token.
+   * @returns JWT token or null if not authenticated
+   */
   const getToken = async (): Promise<string | null> => {
     if (!currentUser) return null;
     try {
@@ -153,12 +179,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth debe usarse dentro de AuthProvider');
-  }
-  return context;
-};
-
+/**
+ * Hook to consume the authentication context.
+ * @throws Error if used outside of `AuthProvider`
+ */
 export default AuthContext;

@@ -1,3 +1,6 @@
+/**
+ * Props for the modal component with a built-in trigger button.
+ */
 interface ModalProps {
   name: string;
   title: string;
@@ -10,6 +13,10 @@ interface ModalProps {
   hideFooter?: boolean;
 }
 
+/**
+ * Bootstrap modal wrapper with configurable size and footer.
+ * Displays a button that triggers the modal.
+ */
 export const Modal = ({ 
   name, 
   title, 

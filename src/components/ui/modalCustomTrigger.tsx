@@ -1,3 +1,6 @@
+/**
+ * Props for the modal component using a custom trigger element.
+ */
 interface ModalProps {
   name: string;
   title: string;
@@ -6,6 +9,9 @@ interface ModalProps {
   size?: "sm"|  "md" | "lg" | "xl";
 }
 
+/**
+ * Bootstrap modal wrapper that accepts a custom trigger node.
+ */
 export const ModalCustomTrigger = ({ 
   name, 
   title, 
