@@ -8,26 +8,33 @@ import {
   loginWithGithub,
 } from '@/service/firebase/login';
 import { logout as firebaseLogout } from '@/service/firebase/logout';
-import { register as registerWithEmail } from '@/service/api/auth';
-import { deleteUser, verifyToken } from '@/service/api/auth';
+import { useAuthService } from '@/service/api/auth.service';
 type AuthContextType = {
   isAuthenticated: boolean;
   currentUser: User | null;
+  token: string | null;
   loading: boolean;
+  deleteUser: () => void;
   login: (email: string, password: string) => Promise<void>;
-  register: (user: UserRegister) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   loginWithGithub: () => Promise<void>;
   logout: () => Promise<void>;
-  getToken: () => Promise<string | null>;
-  deleteAccount: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * React provider that initializes Firebase auth listeners
+ * and exposes auth methods and state to the application.
+ *
+ * @param children React subtree to wrap with authentication context
+ */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const {verifyToken} = useAuthService();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -36,6 +43,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         if (user) {
           const token = await user.getIdToken();
+          setToken(token);
           const data = await verifyToken(token);
           if (!data) {
             console.error('Invalid token data');
@@ -60,6 +68,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => unsubscribe();
   }, []);
 
+  const deleteUser = () => {
+    setCurrentUser(null);
+    setToken(null);
+  }
+
+  /**
+   * Sign in using email/password.
+   * @param email Email address
+   * @param password Password
+   */
   const login = async (email: string, password: string): Promise<void> => {
     try {
       await loginWithEmail(email, password);
@@ -71,43 +89,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const register = async (user: UserRegister): Promise<void> => {
-    try {
-      await registerWithEmail(user);
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error('Error en registro:', error);
-        throw new Error(error.message || 'Error al registrarse');
-      }
-    }
-  };
 
+  /** Sign in using Google OAuth popup. */
   const handleGoogleLogin = async (): Promise<void> => {
     try {
       await loginWithGoogle();
     } catch (error) {
       if (error instanceof Error) {
-        console.error('Error con Google:', error);
-        throw new Error(error.message || 'Error al iniciar sesión con Google');
+        const message = error.message.includes("account-exists-with-different-credential") ? "Ya tienes una cuenta con este correo electrónico" : error.message;
+        throw new Error(message || 'Error al iniciar sesión con Google');
       }
     }
   };
 
+  /** Sign in using GitHub OAuth popup. */
   const handleGithubLogin = async (): Promise<void> => {
     try {
       await loginWithGithub();
     } catch (error) {
       if (error instanceof Error) {
-        console.error('Error con Github:', error);
-        throw new Error(error.message || 'Error al iniciar sesión con Github');
+        const message = error.message.includes("account-exists-with-different-credential") ? "Ya tienes una cuenta con este correo electrónico" : error.message;
+        throw new Error(message || 'Error al iniciar sesión con Github');
       }
     }
   };
 
+  /** Logout the current user. */
   const handleLogout = async (): Promise<void> => {
     try {
       await firebaseLogout();
       setCurrentUser(null);
+      setToken(null);
     } catch (error) {
       if (error instanceof Error) {
         console.error('Error al cerrar sesión:', error);
@@ -116,45 +128,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const handleDeleteAccount = async (): Promise<void> => {
-    if (!currentUser) {
-      throw new Error('No hay usuario autenticado');
-    }
-
-    try {
-      await deleteUser(currentUser.uid);
-      await firebaseLogout();
-      setCurrentUser(null);
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error('Error al eliminar la cuenta:', error);
-        throw new Error(error.message || 'Error al eliminar la cuenta');
-      }
-      throw error;
-    }
-  };
-
-  const getToken = async (): Promise<string | null> => {
-    if (!currentUser) return null;
-    try {
-      return await currentUser.getIdToken();
-    } catch (error) {
-      console.error('Error obteniendo token:', error);
-      return null;
-    }
-  };
-
   const value: AuthContextType = {
     isAuthenticated: !!currentUser,
     currentUser,
+    token,
     loading,
+    deleteUser,
     login,
-    register,
     loginWithGoogle: handleGoogleLogin,
     loginWithGithub: handleGithubLogin,
     logout: handleLogout,
-    getToken,
-    deleteAccount: handleDeleteAccount,
   };
 
   if (loading) {
@@ -174,12 +157,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth debe usarse dentro de AuthProvider');
-  }
-  return context;
-};
-
+/**
+ * Hook to consume the authentication context.
+ * @throws Error if used outside of `AuthProvider`
+ */
 export default AuthContext;

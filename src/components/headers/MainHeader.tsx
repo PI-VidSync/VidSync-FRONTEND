@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "./MainHeader.scss";
-import { useAuth } from "../../auth/AuthContext";
+import { useAuth } from "@/auth/useAuth";
 import { User2, LogOut } from "lucide-react";
 import { useToast } from "../../hooks/useToast";
 

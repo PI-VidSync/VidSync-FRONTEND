@@ -116,6 +116,16 @@
       border-color: #ccc;
     }
   }
+
+  &.btn-icon {
+    padding: 0;
+    background-color: transparent;
+    transition: 0.2s ease-in-out;
+
+    &:hover {
+      color: $primary;
+    }
+  }
 }
 
 // Title

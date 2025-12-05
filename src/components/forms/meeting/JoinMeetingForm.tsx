@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { FormField } from "../ui/input";
+import { FormField } from "../../ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useToast } from "../../hooks/useToast";
+import { useToast } from "../../../hooks/useToast";
 import { Modal } from "bootstrap";
 import "./MeetingForm.scss";
 

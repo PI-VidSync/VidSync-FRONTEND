@@ -9,6 +9,9 @@ export interface ToastOptions {
   duration?: number; // en milisegundos, por defecto 3000
 }
 
+/**
+ * Hook providing helper methods to show Bootstrap toasts.
+ */
 export const useToast = () => {
   const showToast = useCallback((options: ToastOptions) => {
     const { message, type, duration = 3000 } = options;
@@ -39,7 +42,7 @@ export const useToast = () => {
     }
   }, []);
 
-  // Métodos de conveniencia
+  // Convenience methods
   const success = useCallback((message: string, duration?: number) => {
     showToast({ message, type: "success", duration });
   }, [showToast]);

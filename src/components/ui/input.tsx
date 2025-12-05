@@ -1,6 +1,9 @@
 import React from "react";
 import type { FieldError, UseFormRegisterReturn } from "react-hook-form";
 
+/**
+ * Props for a labeled input field integrated with react-hook-form.
+ */
 interface FormFieldProps {
   label: string;
   type?: string;
@@ -16,6 +19,10 @@ interface FormFieldProps {
   };
 }
 
+/**
+ * Controlled input field with label, icon and error display.
+ * @param props Form field properties
+ */
 export const FormField: React.FC<FormFieldProps> = ({
   label,
   type,

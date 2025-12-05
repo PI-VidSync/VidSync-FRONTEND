@@ -5,3 +5,5 @@ interface UserRegister {
   age: number;
   password: string;
 }
+
+interface UserUpdate extends Omit<UserRegister, "password"> { }

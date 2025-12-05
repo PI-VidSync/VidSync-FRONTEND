@@ -7,7 +7,7 @@ import { Eye, EyeOff, Lock, Mail , ArrowLeft } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField } from "@/components/ui/input";
-import { useAuth } from "@/auth/AuthContext";
+import { useAuth } from "@/auth/useAuth";
 
 const loginSchema = z.object({
   email: z
@@ -49,7 +49,6 @@ const LoginPage: React.FC = () => {
       navigate("/dashboard");
 
     } catch (error) {
-      console.error(typeof error)
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
@@ -66,8 +65,11 @@ const LoginPage: React.FC = () => {
       toast.success("¡Inicio de sesión con Google exitoso!");
       navigate("/dashboard");
     } catch (error) {
-      console.error("Error:", error);
-      toast.error("Error al iniciar sesión con Google");
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Error al iniciar sesión con Google");
+      }
     }
   }
 
@@ -77,8 +79,11 @@ const LoginPage: React.FC = () => {
       toast.success("¡Inicio de sesión con GitHub exitoso!");
       navigate("/dashboard");
     } catch (error) {
-      console.error("Error:", error);
-      toast.error("Error al iniciar sesión con GitHub");
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Error al iniciar sesión con GitHub");
+      }
     }
   }
 

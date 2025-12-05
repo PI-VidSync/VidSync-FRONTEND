@@ -7,7 +7,7 @@ import { Eye, EyeOff, Lock, Mail, User, Calendar, ArrowLeft } from "lucide-react
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField } from "@/components/ui/input";
-import { useAuth } from "@/auth/AuthContext";
+import { useAuthService } from "@/service/api/auth.service";
 
 const registerSchema = z
   .object({
@@ -48,7 +48,7 @@ const RegisterPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { register: registerUser } = useAuth();
+  const { register: registerUser } = useAuthService();
 
   const {
     register,
