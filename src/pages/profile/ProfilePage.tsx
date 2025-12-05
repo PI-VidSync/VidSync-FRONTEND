@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./ProfilePage.scss";
 import { Modal } from "@/components/ui/modal";
-import EditProfileForm from "@/components/forms/EditProfileForm";
+import EditProfileForm from "@/components/forms/profile/EditProfileForm";
 import { useToast } from "@/hooks/useToast";
 import { useAuth } from "@/auth/useAuth";
 import { useApi } from "@/hooks/useApi";
 import { PencilLineIcon } from "lucide-react";
+import { EditPasswordForm } from "@/components/forms/profile/EditPassword";
 
 /**
  * Profile page displaying user info and actions to edit or delete the account.
@@ -46,21 +47,23 @@ const ProfilePage: React.FC = () => {
       </div>
 
       <section className="user-info">
-        <div className="avatar">
-          {currentUser.photoURL ? (
-            <img src={currentUser.photoURL} alt="Avatar" />
-          ) : (
-            <div className="avatar-placeholder">
-              <span>{currentUser.displayName?.charAt(0).toUpperCase()}</span>
-            </div>
-          )}
-        </div>
+        <section className="user-name">
+          <div className="avatar">
+            {currentUser.photoURL ? (
+              <img src={currentUser.photoURL} alt="Avatar" />
+            ) : (
+              <div className="avatar-placeholder">
+                <span>{currentUser.displayName?.charAt(0).toUpperCase()}</span>
+              </div>
+            )}
+          </div>
 
-        <div className="user-details">
-          <h2>{currentUser.displayName}</h2>
-          <p>{currentUser.email}</p>
-        </div>
+          <div className="user-details">
+            <h2>{currentUser.displayName}</h2>
+            <p>{currentUser.email}</p>
+          </div>
 
+        </section>
         <Modal
           name="edit-profile"
           title="Editar Perfil"
@@ -95,7 +98,14 @@ const ProfilePage: React.FC = () => {
         <div className="field">
           <span className="label">Contraseña</span>
           <section className="flex">
-            <button type="button" className="btn btn-icon"><PencilLineIcon size={20} /></button>
+            <Modal
+              name="edit-password"
+              title="Editar Contraseña"
+              customTrigger={<button type="button" className="btn btn-icon"><PencilLineIcon size={20} /></button>}
+              hideFooter
+            >
+              <EditPasswordForm />
+            </Modal>
             <span className="value">••••••••••••••••</span>
           </section>
         </div>

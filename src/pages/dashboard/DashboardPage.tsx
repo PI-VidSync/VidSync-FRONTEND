@@ -2,8 +2,8 @@ import React from "react";
 import "./DashboardPage.scss";
 import { Monitor, Users } from "lucide-react";
 import { ModalCustomTrigger } from "@/components/ui/modalCustomTrigger";
-import CreateMeetingForm from "@/components/forms/CreateMeetingForm";
-import JoinMeetingForm from "@/components/forms/JoinMeetingForm";
+import CreateMeetingForm from "@/components/forms/meeting/CreateMeetingForm";
+import JoinMeetingForm from "@/components/forms/meeting/JoinMeetingForm";
 
 const DashboardPage: React.FC = () => {
   return (

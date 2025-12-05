@@ -4,13 +4,14 @@
 interface ModalProps {
   name: string;
   title: string;
-  triggerText: string;
+  triggerText?: string;
   children: React.ReactNode;
+  customTrigger?: React.ReactNode;
   loading?: boolean;
   confirmText?: string;
   danger?: boolean;
   onFinish?: () => void;
-  size?: "sm"|  "md" | "lg" | "xl";
+  size?: "sm" | "md" | "lg" | "xl";
   hideFooter?: boolean;
 }
 
@@ -18,14 +19,15 @@ interface ModalProps {
  * Bootstrap modal wrapper with configurable size and footer.
  * Displays a button that triggers the modal.
  */
-export const Modal = ({ 
-  name, 
+export const Modal = ({
+  name,
   title,
   loading,
-  triggerText, 
-  confirmText, 
-  children, 
-  danger, 
+  triggerText,
+  confirmText,
+  children,
+  customTrigger,
+  danger,
   onFinish,
   size,
   hideFooter = false
@@ -34,21 +36,23 @@ export const Modal = ({
 
   return (
     <>
-      <button 
-        type="button" 
-        className={`btn ${danger ? 'btn-danger' : 'btn-primary'}`} 
-        data-bs-toggle="modal" 
-        data-bs-target={`#modal-${name}`}
-        disabled={loading}
-      >
-        {triggerText}
-      </button>
+      <div data-bs-toggle="modal" data-bs-target={`#modal-${name}`}>
+        {customTrigger ? customTrigger :
+          <button
+            type="button"
+            className={`btn ${danger ? 'btn-danger' : 'btn-primary'}`}
+            disabled={loading}
+          >
+            {triggerText}
+          </button>
+        }
+      </div>
 
-      <div 
-        className="modal fade" 
-        id={`modal-${name}`} 
-        tabIndex={-1} 
-        aria-labelledby={`modalLabel-${name}`} 
+      <div
+        className="modal fade"
+        id={`modal-${name}`}
+        tabIndex={-1}
+        aria-labelledby={`modalLabel-${name}`}
         aria-hidden="true"
       >
         <div className={`modal-dialog modal-dialog-centered ${modalSize}`}>
@@ -57,10 +61,10 @@ export const Modal = ({
               <h1 className="modal-title fs-5" id={`modalLabel-${name}`}>
                 {title}
               </h1>
-              <button 
-                type="button" 
-                className="btn-close" 
-                data-bs-dismiss="modal" 
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="modal"
                 aria-label="Close"
               ></button>
             </div>
@@ -69,17 +73,17 @@ export const Modal = ({
             </div>
             {!hideFooter && (
               <div className="modal-footer">
-                <button 
-                  type="button" 
-                  className="btn btn-white" 
+                <button
+                  type="button"
+                  className="btn btn-white"
                   data-bs-dismiss="modal"
                 >
                   Cancelar
                 </button>
                 {onFinish && confirmText && (
-                  <button 
-                    type="button" 
-                    className={`btn ${danger ? 'btn-danger' : 'btn-primary'}`} 
+                  <button
+                    type="button"
+                    className={`btn ${danger ? 'btn-danger' : 'btn-primary'}`}
                     onClick={onFinish}
                     data-bs-dismiss="modal"
                   >
