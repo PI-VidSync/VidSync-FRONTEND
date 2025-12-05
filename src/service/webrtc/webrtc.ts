@@ -354,6 +354,7 @@ function createPeerConnection(theirSocketId: string, isInitiator = false) {
    });
 
    return peer;
+   return peer;
 }
 
 function createClientMediaElements(room: string, peerId: string) {
