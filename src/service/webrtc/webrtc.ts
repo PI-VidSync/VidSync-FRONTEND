@@ -54,9 +54,39 @@ if (!serverWebRTCUrl) {
   throw new Error("VITE_WEBRTC_URL no está definido");
 }
 
-const iceServerUrl = import.meta.env.VITE_ICE_SERVER_URL as string | undefined;
-const iceServerUsername = import.meta.env.VITE_ICE_SERVER_USERNAME as string | undefined;
-const iceServerCredential = import.meta.env.VITE_ICE_SERVER_CREDENTIAL as string | undefined;
+// Normalize env values and ignore TURN auth when using public STUN
+const rawIceUrl = (import.meta.env.VITE_ICE_SERVER_URL as string | undefined) ?? "";
+const stripQuotes = (s?: string) => (s ?? "").replace(/^["']|["']$/g, "").trim();
+const iceEnv = stripQuotes(rawIceUrl);
+
+// Force STUN-only when using public servers (no username/credential)
+function buildIceServers(): Array<{ urls: string; username?: string; credential?: string }> {
+  const servers: Array<{ urls: string; username?: string; credential?: string }> = [];
+
+  if (iceEnv) {
+    const entries = iceEnv.split(",").map(e => e.trim()).filter(Boolean);
+    for (const entry of entries) {
+      const hasScheme = /^[a-z]+:/i.test(entry);
+      const url = hasScheme ? entry : `stun:${entry}`;
+      const scheme = url.split(":")[0].toLowerCase();
+
+      // Only allow STUN entries
+      if (scheme === "stun" || scheme === "stuns") {
+        servers.push({ urls: url });
+      } else {
+        // Skip TURN entirely because we're using public STUN (no auth)
+        console.warn("Ignoring TURN server (no auth used with public STUN):", url);
+      }
+    }
+  }
+
+  // Fallback to Google STUN if none configured
+  if (!servers.length) {
+    servers.push({ urls: "stun:stun.l.google.com:19302" });
+  }
+
+  return servers;
+}
 
 /**
  * initWebRTC(options)
@@ -291,49 +321,36 @@ function handleSignal(to: string, from: string, data: any) {
  * @param isInitiator 
  */
 function createPeerConnection(theirSocketId: string, isInitiator = false) {
-   const iceServers: any[] = [];
-   if (iceServerUrl) {
-     const urls = iceServerUrl
-       .split(",")
-       .map(url => url.trim())
-       .filter(Boolean)
-       .map(url => {
-         if (!/^stun:|^turn:|^turns:/.test(url)) return `turn:${url}`;
-         return url;
-       });
-     urls.forEach(url => {
-       const serverConfig: any = { urls: url };
-       if (iceServerUsername) serverConfig.username = iceServerUsername;
-       if (iceServerCredential) serverConfig.credential = iceServerCredential;
-       iceServers.push(serverConfig);
-     });
-   }
+  const iceServers = buildIceServers();
 
-   if (!iceServers.length) {
-     console.warn("No ICE servers configured. Connection may fail.");
-   }
+  if (!iceServers.length) {
+    console.warn("No ICE servers configured. Connection may fail.");
+  }
 
-   const peerOptions: any = {
-     initiator: isInitiator,
-     config: { iceServers },
-     stream: localMediaStream ? localMediaStream : undefined,
-     trickle: true
-   };
+  const peerOptions: any = {
+    initiator: isInitiator,
+    config: { iceServers },
+    stream: localMediaStream ? localMediaStream : undefined,
+    trickle: true,
+  };
 
-  // instantiate simple-peer 
   let peer: any;
   try {
     peer = new (Peer as any)(peerOptions);
   } catch (err) {
     console.error("Failed to instantiate simple-peer:", err, { peerOptions, Peer });
-    // return a safe stub to avoid crashing the app
-    const stub: any = {
-      on: (_: string, __?: any) => {},
-      signal: (_: any) => {},
-      destroy: () => {},
-    };
+    const stub: any = { on: () => {}, signal: () => {}, destroy: () => {} };
     return stub;
   }
+
+  peer.on("signal", (data: any) => {
+    if (!socket) return;
+    socket.emit("signal", theirSocketId, socket.id, data);
+  });
+
+  peer.on("error", (err: any) => {
+    console.warn("Peer error", theirSocketId, err);
+  });
 
    peer.on("signal", (data: any) => {
      if (!socket) return;
