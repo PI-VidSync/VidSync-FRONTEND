@@ -10,8 +10,8 @@ export const useAuthService = () => {
     verifyToken: (token: string) =>
       api("/auth/verify-token", "POST", { token }),
 
-    updatePassword: (password: string, newPassword: string) =>
-      api("/auth/update-password", "PUT", { password, newPassword }),
+    updatePassword: (oldPassword: string, newPassword: string) =>
+      api("/auth/update-password", "PUT", { oldPassword, newPassword }),
 
     updateProfile: (data: UserUpdate) =>
       api(`/auth/update`, "PUT", data),
