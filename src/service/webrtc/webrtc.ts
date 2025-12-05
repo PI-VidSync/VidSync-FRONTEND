@@ -63,30 +63,45 @@ const iceEnv = stripQuotes(rawIceUrl);
 function buildIceServers(): Array<{ urls: string; username?: string; credential?: string }> {
   const servers: Array<{ urls: string; username?: string; credential?: string }> = [];
 
-  if (iceEnv) {
-    const entries = iceEnv.split(",").map(e => e.trim()).filter(Boolean);
-    for (const entry of entries) {
-      const hasScheme = /^[a-z]+:/i.test(entry);
-      const url = hasScheme ? entry : `stun:${entry}`;
-      const scheme = url.split(":")[0].toLowerCase();
+  // Extraer variables
+  const iceUrlRaw = stripQuotes(import.meta.env.VITE_ICE_SERVER_URL ?? "");
+  const username = stripQuotes(import.meta.env.VITE_ICE_SERVER_USERNAME ?? "");
+  const credential = stripQuotes(import.meta.env.VITE_ICE_SERVER_CREDENTIAL ?? "");
 
-      // Only allow STUN entries
-      if (scheme === "stun" || scheme === "stuns") {
-        servers.push({ urls: url });
-      } else {
-        // Skip TURN entirely because we're using public STUN (no auth)
-        console.warn("Ignoring TURN server (no auth used with public STUN):", url);
-      }
+  // Procesar múltiples servidores separados por comas
+  const entries = iceUrlRaw.split(",").map(e => e.trim()).filter(Boolean);
+
+  for (const entry of entries) {
+    let url = entry;
+
+    // Si no empieza por stun: o turn:, agregamos turn: por defecto porque usas TURN
+    if (!/^(stun|turn):/i.test(url)) {
+      url = `turn:${url}`;
+    }
+
+    const scheme = url.split(":")[0].toLowerCase();
+
+    if (scheme === "turn") {
+      servers.push({
+        urls: url,
+        username,
+        credential
+      });
+    } else if (scheme === "stun") {
+      servers.push({
+        urls: url
+      });
+    } else {
+      console.warn("ICE server ignorado por formato no válido:", url);
     }
   }
 
-  // Fallback to Google STUN if none configured
-  if (!servers.length) {
-    servers.push({ urls: "stun:stun.l.google.com:19302" });
-  }
+  // Fallback siempre incluido
+  servers.push({ urls: "stun:stun.l.google.com:19302" });
 
   return servers;
 }
+
 
 /**
  * initWebRTC(options)

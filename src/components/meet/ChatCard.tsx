@@ -195,18 +195,18 @@ export const ChatPanel: React.FC<{ meetingId: string }> = ({ meetingId }) => {
 const ChatMessage: React.FC<ChatMessage & { currentUser?: string }> = ({ author, message, timestamp, currentUser }) => {
   const isOwn = author === undefined || author === currentUser;
   const className = `chat-message chat-message--${isOwn ? "right" : "left"}`;
+  const date = timestamp ? new Date(timestamp)
+    .toLocaleTimeString(
+      [], { hour: "2-digit", minute: "2-digit" }
+    ) : null
+
   return (
     <div className={className}>
       {!isOwn && <span className="chat-message__author">{author}</span>}
       <div className="chat-message__bubble">{message}</div>
-      {timestamp &&
         <div className="chat-timestamp">
-          {new Date(timestamp)
-            .toLocaleTimeString(
-              [], { hour: "2-digit", minute: "2-digit" }
-            )
-          }
-        </div>}
+          {date}
+        </div>
     </div>
   );
 };
