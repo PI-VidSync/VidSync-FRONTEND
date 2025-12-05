@@ -8,19 +8,16 @@ import {
   loginWithGithub,
 } from '@/service/firebase/login';
 import { logout as firebaseLogout } from '@/service/firebase/logout';
-import { register as registerWithEmail } from '@/service/api/auth';
-import { deleteUser, verifyToken } from '@/service/api/auth';
+import { useAuthService } from '@/service/api/auth.service';
 type AuthContextType = {
   isAuthenticated: boolean;
   currentUser: User | null;
+  token: string | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (user: UserRegister) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   loginWithGithub: () => Promise<void>;
   logout: () => Promise<void>;
-  getToken: () => Promise<string | null>;
-  deleteAccount: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,7 +30,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
  */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const {verifyToken} = useAuthService();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -42,6 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         if (user) {
           const token = await user.getIdToken();
+          setToken(token);
           const data = await verifyToken(token);
           if (!data) {
             console.error('Invalid token data');
@@ -82,20 +83,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  /**
-   * Register a user using email/password.
-   * @param user User payload with credentials
-   */
-  const register = async (user: UserRegister): Promise<void> => {
-    try {
-      await registerWithEmail(user);
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error('Error en registro:', error);
-        throw new Error(error.message || 'Error al registrarse');
-      }
-    }
-  };
 
   /** Sign in using Google OAuth popup. */
   const handleGoogleLogin = async (): Promise<void> => {
@@ -126,6 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await firebaseLogout();
       setCurrentUser(null);
+      setToken(null);
     } catch (error) {
       if (error instanceof Error) {
         console.error('Error al cerrar sesión:', error);
@@ -134,49 +122,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const handleDeleteAccount = async (): Promise<void> => {
-    if (!currentUser) {
-      throw new Error('No hay usuario autenticado');
-    }
-
-    try {
-      await deleteUser(currentUser.uid);
-      await firebaseLogout();
-      setCurrentUser(null);
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error('Error al eliminar la cuenta:', error);
-        throw new Error(error.message || 'Error al eliminar la cuenta');
-      }
-      throw error;
-    }
-  };
-
-  /**
-   * Get the current user's ID token.
-   * @returns JWT token or null if not authenticated
-   */
-  const getToken = async (): Promise<string | null> => {
-    if (!currentUser) return null;
-    try {
-      return await currentUser.getIdToken();
-    } catch (error) {
-      console.error('Error obteniendo token:', error);
-      return null;
-    }
-  };
-
   const value: AuthContextType = {
     isAuthenticated: !!currentUser,
     currentUser,
+    token,
     loading,
     login,
-    register,
     loginWithGoogle: handleGoogleLogin,
     loginWithGithub: handleGithubLogin,
     logout: handleLogout,
-    getToken,
-    deleteAccount: handleDeleteAccount,
   };
 
   if (loading) {

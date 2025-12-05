@@ -84,6 +84,12 @@
   font-weight: 600;
 }
 
+.field .flex {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 /* Eliminar cuenta */
 .delete-section {
   display: flex;

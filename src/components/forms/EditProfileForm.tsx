@@ -6,6 +6,8 @@ import { useForm } from "react-hook-form";
 import { FormField } from "@/components/ui/input";
 import "./EditProfileForm.scss";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuth } from "@/auth/useAuth";
+import { useAuthService } from "@/service/api/auth.service";
 
 const editProfileSchema = z.object({
   firstName: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
@@ -19,32 +21,22 @@ const editProfileSchema = z.object({
  */
 type EditProfileFormData = z.infer<typeof editProfileSchema>;
 
-/**
- * Props for the EditProfileForm component.
- */
-interface EditProfileFormProps {
-  initialData?: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    age?: number;
-  };
-  onSubmit: (data: EditProfileFormData) => Promise<void> | void;
-}
-
-const EditProfileForm: React.FC<EditProfileFormProps> = ({
-  initialData = { firstName: "", lastName: "", email: "", age: 13 },
-  onSubmit,
-}) => {
+const EditProfileForm: React.FC = () => {
+  const { currentUser } = useAuth();
+  const { updateProfile } = useAuthService();
   const toast = useToast();
   const [loading, setLoading] = useState(false);
 
+  if (!currentUser) {
+    return null;
+  }
+
   const { register, handleSubmit, reset, formState: { errors } } = useForm<EditProfileFormData>({
     defaultValues: {
-      firstName: initialData.firstName,
-      lastName: initialData.lastName,
-      email: initialData.email,
-      age: initialData.age || 13,
+      firstName: currentUser?.displayName?.split(" ")[0] ?? "",
+      lastName: currentUser?.displayName?.split(" ").slice(1).join(" ") ?? "",
+      email: currentUser?.email ?? undefined,
+      age: 13,
     },
     resolver: zodResolver(editProfileSchema),
   });
@@ -53,7 +45,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
     setLoading(true);
 
     try {
-      await onSubmit(data);
+      await updateProfile(data);
       reset({
         firstName: data.firstName,
         lastName: data.lastName,

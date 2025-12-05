@@ -6,8 +6,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "../../hooks/useToast";
 import { Modal } from "bootstrap";
-import { createMeeting } from "@/service/api/meetings";
 import "./MeetingForm.scss";
+import { useMeetingsService } from "../../service/api/meetings.service";
 
 const createMeetingSchema = z.object({
   title: z.string().min(1, "El título es requerido"),
@@ -16,9 +16,10 @@ const createMeetingSchema = z.object({
 type CreateMeetingFormData = z.infer<typeof createMeetingSchema>;
 
 const CreateMeetingForm: React.FC = () => {
-  const [loading, setLoading] = useState(false);
+  const { createMeeting } = useMeetingsService();
   const navigate = useNavigate();
   const toast = useToast();
+  const [loading, setLoading] = useState(false);
 
   const {
     handleSubmit,
