@@ -152,7 +152,7 @@ const IntoMeeting: React.FC = () => {
 
     return () => {
       mounted = false;
-      if (meetingId) leaveRoom(meetingId).catch(() => {});
+      if (meetingId) leaveRoom(meetingId).catch(() => { });
       stopLocalStream();
       unsub();
       // clear participants on unmount
@@ -233,7 +233,7 @@ const IntoMeeting: React.FC = () => {
     // delete user-scoped chat_room when leaving the call
     const username = getCookie("username");
     if (username) deleteCookie("chat_room");
-    if (meetingId) leaveRoom(meetingId).catch(() => {});
+    if (meetingId) leaveRoom(meetingId).catch(() => { });
     leaveAll();
     navigate("/dashboard");
   };
@@ -255,17 +255,21 @@ const IntoMeeting: React.FC = () => {
   return (
     <section className="meeting-screen">
       <div className="meeting-stage">
-        {/* render local user as primary participant */}
-        {localSocketId && participants.find(p => p.id === localSocketId) && (
-          <MeetCard {...participants.find(p => p.id === localSocketId)!} />
-        )}
+        <section className="participants-grid">
+          {/* Card principal - usuario local (más grande) */}
+          {localSocketId && participants.find(p => p.id === localSocketId) && (
+            <MeetCard {...participants.find(p => p.id === localSocketId)!} />
+          )}
 
-        {/* render other participants */}
-        {participants.filter(p => p.id !== localSocketId).map((participant) => (
-          <MeetCard key={participant.id} {...participant} />
-        ))}
+          {/* Grid de cards secundarias - otros participantes (más pequeñas) */}
+          {participants.filter(p => p.id !== localSocketId).length > 0 && (
+            participants.filter(p => p.id !== localSocketId).map((participant) => (
+              <MeetCard key={participant.id} {...participant} />
+            ))
+          )}
+        </section>
 
-        <div className="meeting-controls-container">
+        <section className="meeting-controls-container">
           <nav className="meeting-controls">
             {controls.map((control) => {
               const Icon = (() => {
@@ -311,7 +315,7 @@ const IntoMeeting: React.FC = () => {
               );
             })}
           </nav>
-        </div>
+        </section>
       </div>
       <ChatPanel meetingId={meetingId ?? ""} />
     </section>
