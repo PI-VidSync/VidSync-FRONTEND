@@ -13,7 +13,7 @@ export const useAuthService = () => {
     updatePassword: (password: string, newPassword: string) =>
       api("/auth/update-password", "PUT", { password, newPassword }),
 
-    updateProfile: (data: { firstName: string; lastName: string; email: string; age: number }) =>
+    updateProfile: (data: UserUpdate) =>
       api(`/auth/update`, "PUT", data),
 
     deleteUser: () => api(`/auth/delete`, "DELETE"),

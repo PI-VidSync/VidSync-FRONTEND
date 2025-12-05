@@ -18,12 +18,13 @@ const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleDeleteAccount = async () => {
-    if (isDeleting) return;
+  const { deleteUser } = useAuth();
 
+  const handleDeleteAccount = async () => {
     try {
       setIsDeleting(true);
       await api("/auth/delete", "DELETE");
+      deleteUser();
       toast.success("Cuenta eliminada correctamente");
       navigate("/");
     } catch (error) {
@@ -41,7 +42,7 @@ const ProfilePage: React.FC = () => {
   return (
     <div className="profile-card">
       <div className="greeting">
-        <h1>👋 Hola, {currentUser.displayName}</h1>
+        <h1>👋 Hola, {currentUser.displayName?.split(" ")[0]}</h1>
       </div>
 
       <section className="user-info">
@@ -106,9 +107,10 @@ const ProfilePage: React.FC = () => {
         <Modal
           name="delete-account"
           title="Eliminar Cuenta"
-          triggerText="Eliminar Cuenta"
-          confirmText={isDeleting ? "Eliminando..." : "Eliminar"}
+          triggerText={isDeleting ? "Eliminando..." : "Eliminar Cuenta"}
+          confirmText="Eliminar"
           danger
+          loading={isDeleting}
           onFinish={handleDeleteAccount}
         >
           <p>¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.</p>

@@ -14,6 +14,7 @@ type AuthContextType = {
   currentUser: User | null;
   token: string | null;
   loading: boolean;
+  deleteUser: () => void;
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   loginWithGithub: () => Promise<void>;
@@ -67,6 +68,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => unsubscribe();
   }, []);
 
+  const deleteUser = () => {
+    setCurrentUser(null);
+    setToken(null);
+  }
+
   /**
    * Sign in using email/password.
    * @param email Email address
@@ -90,8 +96,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await loginWithGoogle();
     } catch (error) {
       if (error instanceof Error) {
-        console.error('Error con Google:', error);
-        throw new Error(error.message || 'Error al iniciar sesión con Google');
+        const message = error.message.includes("account-exists-with-different-credential") ? "Ya tienes una cuenta con este correo electrónico" : error.message;
+        throw new Error(message || 'Error al iniciar sesión con Google');
       }
     }
   };
@@ -102,8 +108,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await loginWithGithub();
     } catch (error) {
       if (error instanceof Error) {
-        console.error('Error con Github:', error);
-        throw new Error(error.message || 'Error al iniciar sesión con Github');
+        const message = error.message.includes("account-exists-with-different-credential") ? "Ya tienes una cuenta con este correo electrónico" : error.message;
+        throw new Error(message || 'Error al iniciar sesión con Github');
       }
     }
   };
@@ -127,6 +133,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     currentUser,
     token,
     loading,
+    deleteUser,
     login,
     loginWithGoogle: handleGoogleLogin,
     loginWithGithub: handleGithubLogin,

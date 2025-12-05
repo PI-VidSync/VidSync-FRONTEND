@@ -6,6 +6,7 @@ interface ModalProps {
   title: string;
   triggerText: string;
   children: React.ReactNode;
+  loading?: boolean;
   confirmText?: string;
   danger?: boolean;
   onFinish?: () => void;
@@ -19,7 +20,8 @@ interface ModalProps {
  */
 export const Modal = ({ 
   name, 
-  title, 
+  title,
+  loading,
   triggerText, 
   confirmText, 
   children, 
@@ -37,6 +39,7 @@ export const Modal = ({
         className={`btn ${danger ? 'btn-danger' : 'btn-primary'}`} 
         data-bs-toggle="modal" 
         data-bs-target={`#modal-${name}`}
+        disabled={loading}
       >
         {triggerText}
       </button>
