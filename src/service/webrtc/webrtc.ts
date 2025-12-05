@@ -54,9 +54,54 @@ if (!serverWebRTCUrl) {
   throw new Error("VITE_WEBRTC_URL no está definido");
 }
 
-const iceServerUrl = import.meta.env.VITE_ICE_SERVER_URL as string | undefined;
-const iceServerUsername = import.meta.env.VITE_ICE_SERVER_USERNAME as string | undefined;
-const iceServerCredential = import.meta.env.VITE_ICE_SERVER_CREDENTIAL as string | undefined;
+// Normalize env values and ignore TURN auth when using public STUN
+const rawIceUrl = (import.meta.env.VITE_ICE_SERVER_URL as string | undefined) ?? "";
+const stripQuotes = (s?: string) => (s ?? "").replace(/^["']|["']$/g, "").trim();
+const iceEnv = stripQuotes(rawIceUrl);
+
+// Force STUN-only when using public servers (no username/credential)
+function buildIceServers(): Array<{ urls: string; username?: string; credential?: string }> {
+  const servers: Array<{ urls: string; username?: string; credential?: string }> = [];
+
+  // Extraer variables
+  const iceUrlRaw = stripQuotes(import.meta.env.VITE_ICE_SERVER_URL ?? "");
+  const username = stripQuotes(import.meta.env.VITE_ICE_SERVER_USERNAME ?? "");
+  const credential = stripQuotes(import.meta.env.VITE_ICE_SERVER_CREDENTIAL ?? "");
+
+  // Procesar múltiples servidores separados por comas
+  const entries = iceUrlRaw.split(",").map(e => e.trim()).filter(Boolean);
+
+  for (const entry of entries) {
+    let url = entry;
+
+    // Si no empieza por stun: o turn:, agregamos turn: por defecto porque usas TURN
+    if (!/^(stun|turn):/i.test(url)) {
+      url = `turn:${url}`;
+    }
+
+    const scheme = url.split(":")[0].toLowerCase();
+
+    if (scheme === "turn") {
+      servers.push({
+        urls: url,
+        username,
+        credential
+      });
+    } else if (scheme === "stun") {
+      servers.push({
+        urls: url
+      });
+    } else {
+      console.warn("ICE server ignorado por formato no válido:", url);
+    }
+  }
+
+  // Fallback siempre incluido
+  servers.push({ urls: "stun:stun.l.google.com:19302" });
+
+  return servers;
+}
+
 
 /**
  * initWebRTC(options)
