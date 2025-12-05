@@ -82,6 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const deleteUser = () => {
     setCurrentUser(null);
     setToken(null);
+    deleteCookie('username');
   }
 
   /**
