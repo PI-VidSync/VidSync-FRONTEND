@@ -352,7 +352,25 @@ function createPeerConnection(theirSocketId: string, isInitiator = false) {
     console.warn("Peer error", theirSocketId, err);
   });
 
-  return peer;
+   peer.on("signal", (data: any) => {
+     if (!socket) return;
+     // emit signal to target peer (server will route it)
+     socket.emit("signal", theirSocketId, socket.id, data);
+   });
+
+   /* peer.on("stream", (stream: MediaStream) => {
+     updateClientMediaElements(theirSocketId, stream);
+   });
+ */
+  /*  peer.on("close", () => {
+     if (currentRoom) removeClientMediaElements(currentRoom, theirSocketId);
+   }); */
+
+   peer.on("error", (err: any) => {
+     console.warn("Peer error", theirSocketId, err);
+   });
+
+   return peer;
 }
 /* 
 function createClientMediaElements(room: string, peerId: string) {
