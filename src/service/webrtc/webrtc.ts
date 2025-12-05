@@ -281,7 +281,7 @@ function handleNewUserConnected(theirId: string) {
   const roomPeers = peersByRoom[currentRoom] ?? (peersByRoom[currentRoom] = {});
   if (!roomPeers[theirId]) {
     roomPeers[theirId] = { peerConnection: null };
-   //createClientMediaElements(currentRoom!, theirId);
+   createClientMediaElements(currentRoom!, theirId);
   }
   // request identity for new user and emit updated list
   socket.emit("requestIdentityFor", { room: currentRoom, socketId: theirId });
@@ -297,7 +297,7 @@ function handleUserDisconnected(theirId: string) {
   const roomPeers = peersByRoom[currentRoom] ?? {};
   if (roomPeers[theirId]) {
     roomPeers[theirId].peerConnection?.destroy?.();
-    //removeClientMediaElements(currentRoom, theirId);
+    removeClientMediaElements(currentRoom, theirId);
     delete roomPeers[theirId];
   }
   emitPeers(currentRoom);
@@ -336,36 +336,49 @@ function handleSignal(to: string, from: string, data: any) {
  * @param isInitiator 
  */
 function createPeerConnection(theirSocketId: string, isInitiator = false) {
-  const iceServers = buildIceServers();
+   const iceServers: any[] = [];
+   if (iceServerUrl) {
+     const urls = iceServerUrl
+       .split(",")
+       .map(url => url.trim())
+       .filter(Boolean)
+       .map(url => {
+         if (!/^stun:|^turn:|^turns:/.test(url)) return `turn:${url}`;
+         return url;
+       });
+     urls.forEach(url => {
+       const serverConfig: any = { urls: url };
+       if (iceServerUsername) serverConfig.username = iceServerUsername;
+       if (iceServerCredential) serverConfig.credential = iceServerCredential;
+       iceServers.push(serverConfig);
+     });
+   }
 
-  if (!iceServers.length) {
-    console.warn("No ICE servers configured. Connection may fail.");
-  }
+   if (!iceServers.length) {
+     console.warn("No ICE servers configured. Connection may fail.");
+   }
 
-  const peerOptions: any = {
-    initiator: isInitiator,
-    config: { iceServers },
-    stream: localMediaStream ? localMediaStream : undefined,
-    trickle: true,
-  };
+   const peerOptions: any = {
+     initiator: isInitiator,
+     config: { iceServers },
+     stream: localMediaStream ? localMediaStream : undefined,
+     trickle: true
+   };
 
+  // instantiate simple-peer 
   let peer: any;
   try {
     peer = new (Peer as any)(peerOptions);
   } catch (err) {
     console.error("Failed to instantiate simple-peer:", err, { peerOptions, Peer });
-    const stub: any = { on: () => {}, signal: () => {}, destroy: () => {} };
+    // return a safe stub to avoid crashing the app
+    const stub: any = {
+      on: (_: string, __?: any) => {},
+      signal: (_: any) => {},
+      destroy: () => {},
+    };
     return stub;
   }
-
-  peer.on("signal", (data: any) => {
-    if (!socket) return;
-    socket.emit("signal", theirSocketId, socket.id, data);
-  });
-
-  peer.on("error", (err: any) => {
-    console.warn("Peer error", theirSocketId, err);
-  });
 
    peer.on("signal", (data: any) => {
      if (!socket) return;
@@ -373,21 +386,22 @@ function createPeerConnection(theirSocketId: string, isInitiator = false) {
      socket.emit("signal", theirSocketId, socket.id, data);
    });
 
-   /* peer.on("stream", (stream: MediaStream) => {
+   peer.on("stream", (stream: MediaStream) => {
      updateClientMediaElements(theirSocketId, stream);
    });
- */
-  /*  peer.on("close", () => {
+
+  peer.on("close", () => {
      if (currentRoom) removeClientMediaElements(currentRoom, theirSocketId);
-   }); */
+   });
 
    peer.on("error", (err: any) => {
      console.warn("Peer error", theirSocketId, err);
    });
 
    return peer;
+   return peer;
 }
-/* 
+
 function createClientMediaElements(room: string, peerId: string) {
   const containerId = `${room}_${peerId}_container`;
   if (document.getElementById(containerId)) return;
@@ -437,7 +451,7 @@ export function attachLocalVideoElement(el: HTMLMediaElement | null) {
     el.srcObject = null;
     el.style.backgroundImage = "";
   }
-} */
+}
 
 /** Toggle audio tracks enabled/disabled
  * 
@@ -469,7 +483,7 @@ export async function leaveRoom(room?: string) {
   const roomPeers = peersByRoom[target] ?? {};
   Object.keys(roomPeers).forEach(k => {
     roomPeers[k].peerConnection?.destroy?.();
-    //removeClientMediaElements(target, k);
+    removeClientMediaElements(target, k);
   });
   delete peersByRoom[target];
 
