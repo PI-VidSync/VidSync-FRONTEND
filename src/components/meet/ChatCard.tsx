@@ -33,9 +33,10 @@ function getRoomFromUrl(): string {
     return "";
   }
 }
-
+// ChatPanel component
 export const ChatPanel: React.FC<{ meetingId: string }> = ({ meetingId }) => {
-  const usernameRef = useRef<string>(localStorage.getItem("chat_username") || `user-${Math.random().toString(36).slice(2, 8)}`);
+  // read existing auth-based cookie set by AuthContext; fallback to random if missing
+  const usernameRef = useRef<string>(getCookie("username") || `user-${Math.random().toString(36).slice(2, 8)}`);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const listRef = useRef<HTMLDivElement | null>(null);
   const pendingIdsRef = useRef<Set<string>>(new Set());
@@ -59,10 +60,9 @@ export const ChatPanel: React.FC<{ meetingId: string }> = ({ meetingId }) => {
     // avoid re-joining same room repeatedly
     if (joinedRoomRef.current !== room) {
       joinedRoomRef.current = room;
-      // persist room and username using cookies only
+      // persist room only; username comes from AuthContext cookie (do not create here)
       setCookie("chat_room", room, 7);
-      setCookie("chat_username", usernameRef.current, 7);
-      console.log("ChatPanel: auto-joining room", room);
+      //console.log("ChatPanel: auto-joining room", room);
       socket.emit("joinRoom", room, { uid: usernameRef.current, name: usernameRef.current });
     }
 
@@ -95,36 +95,30 @@ export const ChatPanel: React.FC<{ meetingId: string }> = ({ meetingId }) => {
       setMessages(prev => [...prev, incoming]);
     };
 
-    const onUsersOnline = (_payload: any) => {
-      // optional presence handling
-    };
-
     socket.on("chat:message", onMessage);
-    socket.on("usersOnline", onUsersOnline);
 
     return () => {
       if (joinedRoomRef.current === room) {
-        console.log("ChatPanel: leaving room", room);
+        //console.log("ChatPanel: leaving room", room);
         socket.emit("leaveRoom", room);
-        // remove persisted cookies when leaving the room
+        // remove persisted room cookie when leaving
         deleteCookie("chat_room");
-        deleteCookie("chat_username");
         joinedRoomRef.current = null;
       }
       window.removeEventListener("mousemove", onActivity);
       window.removeEventListener("keydown", onActivity);
       window.removeEventListener("click", onActivity);
       socket.off("chat:message", onMessage);
-      socket.off("usersOnline", onUsersOnline);
     };
   }, [meetingId]);
 
+  // scroll to bottom on new messages
   useEffect(() => {
     if (!listRef.current) return;
     listRef.current.scrollTop = listRef.current.scrollHeight;
   }, [messages]);
 
-  // before sending, ensure we have a room (try joinedRef -> localStorage -> URL), auto-join if needed
+  // before sending, ensure we have a room (try joinedRef -> cookie -> URL), auto-join if needed
   const onSubmit = handleSubmit((data) => {
     const trimmed = data.message.trim();
     if (!trimmed) return;
@@ -134,7 +128,6 @@ export const ChatPanel: React.FC<{ meetingId: string }> = ({ meetingId }) => {
 
     if (!room) {
       console.warn("chat:message received without room, ignoring (no room available).");
-      // optional: show UI notification instead of silently ignoring
       return;
     }
 
@@ -143,7 +136,7 @@ export const ChatPanel: React.FC<{ meetingId: string }> = ({ meetingId }) => {
       joinedRoomRef.current = room;
       setCookie("chat_room", room, 7);
       socket.emit("joinRoom", room, { uid: usernameRef.current, name: usernameRef.current });
-      console.log("ChatPanel: joined room before send", room);
+      //console.log("ChatPanel: joined room before send", room);
     }
 
     const clientId = (crypto && (crypto as any).randomUUID)
@@ -166,9 +159,8 @@ export const ChatPanel: React.FC<{ meetingId: string }> = ({ meetingId }) => {
       { id: clientId, message: payload.message, author: undefined, timestamp: payload.timestamp }
     ]);
 
-    // refresh cookie on send to extend expiry and then emit
+    // refresh only the room cookie
     refreshCookie("chat_room", 7);
-    refreshCookie("chat_username", 7);
     socket.emit("chat:message", payload);
     reset();
   });

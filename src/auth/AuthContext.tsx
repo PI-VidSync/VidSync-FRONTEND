@@ -9,6 +9,7 @@ import {
 } from '@/service/firebase/login';
 import { logout as firebaseLogout } from '@/service/firebase/logout';
 import { useAuthService } from '@/service/api/auth.service';
+import { setCookie, deleteCookie } from '@/utils/cookie'; // <-- new import
 type AuthContextType = {
   isAuthenticated: boolean;
   currentUser: User | null;
@@ -48,18 +49,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (!data) {
             console.error('Invalid token data');
             setCurrentUser(null);
+            // remove cookie if invalid
+            deleteCookie('username');
             return;
           } else if (data.exp && new Date(data.exp * 1000) < new Date()) {
             console.error('Token expired');
             setCurrentUser(null);
+            deleteCookie('username');
             return;
           } else {
             setCurrentUser(user);
+            // save display name to cookie for chat / placeholders
+            const displayName = user.displayName ?? user.email ?? user.uid;
+            setCookie('username', displayName, 7);
           }
+        } else {
+          // user signed out - remove cookie
+          deleteCookie('username');
         }
       } catch (error) {
         console.error('Error verifying token:', error);
         setCurrentUser(null);
+        deleteCookie('username');
       } finally {
         setLoading(false);
       }
@@ -120,11 +131,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await firebaseLogout();
       setCurrentUser(null);
       setToken(null);
+      // remove chat username cookie on logout
+      deleteCookie('username');
     } catch (error) {
       if (error instanceof Error) {
         console.error('Error al cerrar sesión:', error);
         throw new Error(error.message || 'Error al cerrar sesión');
       }
+    }
+  };
+
+  const getToken = async (): Promise<string | null> => {
+    if (!currentUser) return null;
+    try {
+      return await currentUser.getIdToken();
+    } catch (error) {
+      console.error('Error obteniendo token:', error);
+      return null;
     }
   };
 
