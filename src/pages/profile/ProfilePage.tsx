@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged, updateEmail, updateProfile } from "firebase/auth";
-import { useAuth } from "@/auth/AuthContext";
 import "./ProfilePage.scss";
 import { Modal } from "@/components/ui/modal";
 import EditProfileForm from "@/components/forms/EditProfileForm";
 import { useToast } from "@/hooks/useToast";
+import { useAuth } from "@/auth/useAuth";
 
 type EditProfileData = {
   firstName: string;
@@ -16,6 +16,9 @@ type EditProfileData = {
 
 const DEFAULT_AGE = "13";
 
+/**
+ * Profile page displaying user info and actions to edit or delete the account.
+ */
 const ProfilePage: React.FC = () => {
   const { currentUser, deleteAccount } = useAuth();
   const toast = useToast();
@@ -150,7 +153,7 @@ const ProfilePage: React.FC = () => {
               firstName,
               lastName,
               email: email === "—" ? "" : email,
-              age,
+              age: +age,
             }}
             onSubmit={handleProfileUpdate}
           />

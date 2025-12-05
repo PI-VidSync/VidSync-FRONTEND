@@ -7,7 +7,7 @@ import { Eye, EyeOff, Lock, Mail, User, Calendar, ArrowLeft } from "lucide-react
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField } from "@/components/ui/input";
-import { useAuth } from "@/auth/AuthContext";
+import { useAuth } from "@/auth/useAuth";
 
 const registerSchema = z
   .object({

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import HomeHeader from "../../components/headers/HomeHeader";
-import { useAuth } from "../../auth/AuthContext";
+import { useAuth } from "@/auth/useAuth";
 import "./HomePage.scss";
 
 const HomePage = () => {
