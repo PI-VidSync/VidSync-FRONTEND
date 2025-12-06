@@ -1,3 +1,25 @@
+@use "@/styles/variables" as *;
+
+.login-card {
+  width: 50dvw;
+  max-width: 500px;
+  max-height: $breakpoint-lg;
+  text-align: center;
+
+  @media (max-width: $breakpoint-lg) {
+    margin-block: 3rem;
+    width: 70dvw;
+  }
+
+  @media (max-width: $breakpoint-md) {
+    margin-block: 0;
+    border-radius: 0;
+    width: 100%;
+    max-width: 100%;
+    min-height: 100dvh;
+  }
+}
+
 .auth-logo {
   height: 60px;
   display: block;
@@ -69,6 +91,7 @@
   margin-top: 1rem;
   margin-bottom: 0;
 }
+
 .btn-back-auth {
   display: flex;
   align-items: center;

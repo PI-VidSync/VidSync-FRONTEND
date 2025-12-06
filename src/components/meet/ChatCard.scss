@@ -1,6 +1,9 @@
+@use "@/styles/variables" as *;
+
 .chat-panel {
   width: 25dvw;
-  min-width: 100px;
+  min-width: 300px;
+  max-width: 500px;
   padding: 0;
   border-radius: 16px;
   box-shadow: 0 22px 38px rgba(0, 0, 0, 0.18);
@@ -28,6 +31,17 @@
       margin: 0;
       border-radius: 50px;
     }
+  }
+
+  @media (max-width: $breakpoint-lg) {
+    width: 100%;
+    max-width: none;
+    height: 100dvh;
+  }
+
+  @media (max-width: $breakpoint-md) {
+    height: 90dvh;
+    border-radius: 0;
   }
 }
 

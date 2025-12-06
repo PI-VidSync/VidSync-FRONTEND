@@ -1,3 +1,5 @@
+@use "@/styles/variables" as *;
+
 // Hero content
 .hero-content {
   min-height: 80vh;
@@ -43,7 +45,7 @@
   justify-content: center;
   gap: 1.5rem;
 
-  @media (max-width: 768px) {
+  @media (max-width: $breakpoint-md) {
     flex-direction: column;
   }
 
@@ -55,7 +57,7 @@
     box-shadow: 0 4px 1px rgba(0, 0, 0, 0.25);
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: $breakpoint-md) {
     .card {
       width: 100%;
     }
@@ -94,13 +96,13 @@
       }
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: $breakpoint-md) {
       .sitemap-grid {
         grid-template-columns: repeat(1, 1fr);
       }
     }
 
-    @media (min-width: 769px) and (max-width: 1024px) {
+    @media (min-width: 769px) and (max-width: $breakpoint-lg) {
       .sitemap-grid {
         grid-template-columns: repeat(2, 1fr);
       }

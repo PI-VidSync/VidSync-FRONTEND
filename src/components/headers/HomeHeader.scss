@@ -1,3 +1,5 @@
+@use "@/styles/variables" as *;
+
 .home-header {
   background: #ffffff;
   color: #00695c;
@@ -11,20 +13,28 @@
   align-items: center;
   justify-content: space-between;
   z-index: 1100;
-  box-shadow: 0 16px 32px rgba(0,0,0,0.3);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3);
 
   img {
     height: 36px;
-    display:inline-block;
+    display: inline-block;
   }
 }
 
-.home-header-buttons {
+.login-buttons {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
-@media (max-width: 768px) {
-  .home-header-center { position: static; transform:none; margin-left: auto; }
+@media (max-width: $breakpoint-md) {
+  .home-header-center {
+    position: static;
+    transform: none;
+    margin-left: auto;
+  }
+
+  .login-buttons {
+    display: none;
+  }
 }
