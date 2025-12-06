@@ -7,16 +7,16 @@
   text-align: center;
 
   @media (max-width: $breakpoint-lg) {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    width: 100%;
-    min-height: 100dvh;
-    border-radius: 0;
+    margin-block: 3rem;
+    width: 70dvw;
   }
 
   @media (max-width: $breakpoint-md) {
-    width: 100dvw;
+    margin-block: 0;
+    border-radius: 0;
+    width: 100%;
+    max-width: 100%;
+    min-height: 100dvh;
   }
 }
 
