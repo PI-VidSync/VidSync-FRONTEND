@@ -1,3 +1,5 @@
+@use "@/styles/variables" as *;
+
 .main-header {
   background: #ffffff;
   color: #00695c;
@@ -27,7 +29,7 @@
 
 }
 
-@media (max-width: 768px) {
+@media (max-width: $breakpoint-md) {
   .main-header {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   }

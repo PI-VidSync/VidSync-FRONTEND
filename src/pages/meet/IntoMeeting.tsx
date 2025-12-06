@@ -258,7 +258,9 @@ const IntoMeeting: React.FC = () => {
         <section className="participants-grid">
           {/* Card principal - usuario local (más grande) */}
           {localSocketId && participants.find(p => p.id === localSocketId) && (
-            <MeetCard {...participants.find(p => p.id === localSocketId)!} />
+            <>
+              <MeetCard {...participants.find(p => p.id === localSocketId)!} /><MeetCard {...participants.find(p => p.id === localSocketId)!} />
+            </>
           )}
 
           {/* Grid de cards secundarias - otros participantes (más pequeñas) */}

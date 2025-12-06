@@ -1,3 +1,5 @@
+@use "@/styles/variables" as *;
+
 .home-header {
   background: #ffffff;
   color: #00695c;
@@ -25,6 +27,6 @@
   gap: 1rem;
 }
 
-@media (max-width: 768px) {
+@media (max-width: $breakpoint-md) {
   .home-header-center { position: static; transform:none; margin-left: auto; }
 }

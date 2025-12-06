@@ -1,3 +1,5 @@
+@use "@/styles/variables" as *;
+
 .main-layout {
   display: flex;
   flex-direction: column;
@@ -15,7 +17,7 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: $breakpoint-md) {
   .main-layout {
     main {
       padding: 0rem;

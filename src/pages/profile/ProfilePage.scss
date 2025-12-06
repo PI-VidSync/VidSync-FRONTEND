@@ -1,8 +1,10 @@
+@use "@/styles/variables" as *;
+
 /* Tarjeta: más compacta y ajustada */
 .profile-card {
   background: white;
   width: 100%;
-  max-width: 768px;
+  max-width: $breakpoint-md;
   border-radius: 1rem;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
   padding: 1.8rem;
@@ -98,7 +100,7 @@
   justify-content: end;
 }
 
-@media (max-width: 768px) {
+@media (max-width: $breakpoint-md) {
   .profile-content {
     padding: 1.5rem;
   }
@@ -119,7 +121,7 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: $breakpoint-md) {
   .profile-card {
     width: 100%;
     margin: 0;
