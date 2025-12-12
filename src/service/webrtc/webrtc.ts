@@ -48,6 +48,10 @@ const peersByRoom: Record<string, Record<string, { peerConnection: any; name?: s
 let currentRoom: string | null = null;
 let localMediaStream: MediaStream | null = null;
 let localDisplayName: string | null = null;
+const remoteVideoElements: Record<string, HTMLVideoElement> = {};
+const pendingRemoteStreams: Record<string, MediaStream> = {};
+
+const buildPeerKey = (room: string, peerId: string) => `${room}_${peerId}`;
 
 const serverWebRTCUrl = import.meta.env.VITE_WEBRTC_URL as string;
 if (!serverWebRTCUrl) {
@@ -358,41 +362,76 @@ function createPeerConnection(theirSocketId: string, isInitiator = false) {
 }
 
 function createClientMediaElements(room: string, peerId: string) {
-  const containerId = `${room}_${peerId}_container`;
-  if (document.getElementById(containerId)) return;
+  const key = buildPeerKey(room, peerId);
+  if (remoteVideoElements[key]) return;
 
-  const parent = document.getElementById("remote_videos") ?? document.body;
-
-  const container = document.createElement("div");
-  container.id = containerId;
-  container.className = "remote-media";
-  container.style.cssText = "display:inline-block;margin:1px;";
-
-  const videoEl = document.createElement("video");
-  videoEl.id = `${room}_${peerId}_video`;
-  videoEl.autoplay = true;
-  videoEl.playsInline = true;
-  videoEl.width = 320;
-  videoEl.height = 240;
-  videoEl.style.cssText = "background:#000;border-radius:6px;";
-
-  container.appendChild(videoEl);
-  parent.appendChild(container);
+  const fallback = document.getElementById(`${key}_video`) as HTMLVideoElement | null;
+  if (fallback) {
+    bindRemoteVideoElement(room, peerId, fallback);
+  }
 }
 
 function updateClientMediaElements(peerId: string, stream: MediaStream) {
   // Try to find element by current room scope first
   if (!currentRoom) return;
-  const videoEl = document.getElementById(`${currentRoom}_${peerId}_video`) as HTMLVideoElement | null;
-  if (videoEl) {
-    videoEl.srcObject = stream;
-    videoEl.play().catch(() => {});
+  const key = buildPeerKey(currentRoom, peerId);
+  const registeredEl = remoteVideoElements[key];
+  const fallback = registeredEl ?? (document.getElementById(`${key}_video`) as HTMLVideoElement | null);
+
+  if (fallback) {
+    remoteVideoElements[key] = fallback;
+    fallback.srcObject = stream;
+    fallback.autoplay = true;
+    fallback.playsInline = true;
+    fallback.play().catch(() => {});
+    fallback.setAttribute("data-has-stream", "true");
+    delete pendingRemoteStreams[key];
+  } else {
+    pendingRemoteStreams[key] = stream;
   }
 }
 
 function removeClientMediaElements(room: string, peerId: string) {
-  const container = document.getElementById(`${room}_${peerId}_container`);
-  if (container) container.remove();
+  const key = buildPeerKey(room, peerId);
+  const registeredEl = remoteVideoElements[key];
+  const fallback = registeredEl ?? (document.getElementById(`${key}_video`) as HTMLVideoElement | null);
+
+  if (fallback) {
+    fallback.srcObject = null;
+    fallback.setAttribute("data-has-stream", "false");
+  }
+
+  delete remoteVideoElements[key];
+  delete pendingRemoteStreams[key];
+}
+
+export function bindRemoteVideoElement(room: string, peerId: string, element: HTMLVideoElement | null) {
+  const key = buildPeerKey(room, peerId);
+
+  if (element) {
+    remoteVideoElements[key] = element;
+    element.autoplay = true;
+    element.playsInline = true;
+    element.setAttribute("data-peer-id", peerId);
+    element.setAttribute("data-room-id", room);
+    element.setAttribute("data-has-stream", element.srcObject ? "true" : "false");
+
+    const pendingStream = pendingRemoteStreams[key];
+    if (pendingStream) {
+      element.srcObject = pendingStream;
+      element.play().catch(() => {});
+      element.setAttribute("data-has-stream", "true");
+      delete pendingRemoteStreams[key];
+    }
+  } else {
+    const registered = remoteVideoElements[key];
+    if (registered) {
+      registered.srcObject = null;
+      registered.setAttribute("data-has-stream", "false");
+    }
+    delete remoteVideoElements[key];
+    delete pendingRemoteStreams[key];
+  }
 }
 
 export function attachLocalVideoElement(el: HTMLMediaElement | null) {
@@ -400,11 +439,14 @@ export function attachLocalVideoElement(el: HTMLMediaElement | null) {
   if (localMediaStream) {
     el.srcObject = localMediaStream;
     el.autoplay = true;
+    el.muted = true;
     el.play().catch(() => {});
     el.style.backgroundImage = "";
+    el.setAttribute("data-has-stream", "true");
   } else {
     el.srcObject = null;
     el.style.backgroundImage = "";
+    el.setAttribute("data-has-stream", "false");
   }
 }
 
@@ -489,7 +531,7 @@ export function hasLocalMedia(): boolean {
 
 export default {
   initWebRTC,
-  //attachLocalVideoElement,
+  bindRemoteVideoElement,
   toggleAudio,
   toggleVideo,
   stopLocalStream,

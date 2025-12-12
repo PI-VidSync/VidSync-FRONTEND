@@ -13,6 +13,23 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   min-height: 0;
   height: 100%;
+  overflow: hidden;
+
+  .video-layer {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    overflow: hidden;
+    background: rgba(3, 24, 32, 0.9);
+    pointer-events: none;
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: #000;
+    }
+  }
 
   .name {
     position: absolute;
@@ -28,9 +45,12 @@
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: calc(100% - 2rem);
+    z-index: 2;
   }
 
   .avatar {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -57,5 +77,29 @@
     gap: 0.55rem;
     bottom: 1rem;
     right: 1rem;
+    z-index: 2;
+  }
+
+  &.has-video {
+    .avatar {
+      opacity: 0;
+      transform: scale(0.85);
+    }
+  }
+
+  &.video-off {
+    .video-layer {
+      background: rgba(3, 24, 32, 0.92);
+
+      video {
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      }
+    }
+
+    .avatar {
+      opacity: 1;
+      transform: none;
+    }
   }
 }

@@ -3,25 +3,17 @@ import { Mic, MicOff, PhoneOff, Video, VideoOff } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ChatPanel } from "@/components/meet/ChatCard";
 import "./IntoMeeting.scss";
-import { MeetCard } from "@/components/meet/MeetCard";
+import { MeetCard, type MeetParticipant } from "@/components/meet/MeetCard";
 import { deleteCookie, getCookie } from "@/utils/cookie";
-import webrtc, {
+import {
   initWebRTC as initWebRTCfn,
   toggleAudio,
   toggleVideo,
   stopLocalStream,
-  hasLocalMedia,
   leaveRoom,
   getLocalSocketId,
   onPeersChange
 } from "@/service/webrtc/webrtc";
-
-type StageParticipant = {
-  id: string;
-  name: string;
-  micEnabled?: boolean;
-  videoEnabled?: boolean;
-};
 
 type ControlId = "mic" | "video" | "hangup";
 
@@ -41,7 +33,7 @@ const IntoMeeting: React.FC = () => {
   // display name from cookie or auth context
   const displayName = getCookie("username") ?? "Yo";
 
-  const [participants, setParticipants] = useState<StageParticipant[]>([]);
+  const [participants, setParticipants] = useState<MeetParticipant[]>([]);
   const [localSocketId, setLocalSocketId] = useState<string | null>(null);
 
   // states for join / device availability
@@ -138,7 +130,7 @@ const IntoMeeting: React.FC = () => {
       const localId = getLocalSocketId();
       if (localId && !localSocketId) setLocalSocketId(localId);
 
-      const mapped: StageParticipant[] = list.map(p => ({
+      const mapped: MeetParticipant[] = list.map(p => ({
         id: p.id,
         name: p.id === (localId ?? localSocketId) ? (displayName ?? p.name ?? p.id) : (p.name ?? p.id),
         micEnabled: true,
@@ -252,23 +244,31 @@ const IntoMeeting: React.FC = () => {
     { id: "hangup", onClick: handleHangup }
   ];
 
+  const localParticipant = localSocketId ? participants.find(p => p.id === localSocketId) : undefined;
+  const remoteParticipants = participants.filter(p => (localSocketId ? p.id !== localSocketId : true));
+
   return (
     <section className="meeting-screen">
       <div className="meeting-stage">
         <section className="participants-grid">
-          {/* Card principal - usuario local (más grande) */}
-          {localSocketId && participants.find(p => p.id === localSocketId) && (
-            <>
-              <MeetCard {...participants.find(p => p.id === localSocketId)!} /><MeetCard {...participants.find(p => p.id === localSocketId)!} />
-            </>
+          {meetingId && localParticipant && (
+            <MeetCard
+              key={localParticipant.id}
+              {...localParticipant}
+              micEnabled={micEnabled}
+              videoEnabled={videoEnabled}
+              meetingId={meetingId}
+              isLocal
+            />
           )}
 
-          {/* Grid de cards secundarias - otros participantes (más pequeñas) */}
-          {participants.filter(p => p.id !== localSocketId).length > 0 && (
-            participants.filter(p => p.id !== localSocketId).map((participant) => (
-              <MeetCard key={participant.id} {...participant} />
-            ))
-          )}
+          {meetingId && remoteParticipants.map(participant => (
+            <MeetCard
+              key={participant.id}
+              {...participant}
+              meetingId={meetingId}
+            />
+          ))}
         </section>
 
         <section className="meeting-controls-container">
