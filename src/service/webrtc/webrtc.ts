@@ -6,7 +6,18 @@ export function getLocalSocketId(): string | null {
   return socket?.id ?? null;
 }
 
-type PeersListener = (peers: { id: string; name?: string }[]) => void;
+type PeerMediaState = {
+  audio?: boolean;
+  video?: boolean;
+};
+
+type PeerEntry = {
+  peerConnection: any;
+  name?: string;
+  media?: PeerMediaState;
+};
+
+type PeersListener = (peers: { id: string; name?: string; media?: PeerMediaState }[]) => void;
 const peersListeners: Record<string, Set<PeersListener>> = {};
 
 /**
@@ -17,7 +28,10 @@ const peersListeners: Record<string, Set<PeersListener>> = {};
 
 function emitPeers(room: string) {
   const roomPeers = peersByRoom[room] ?? {};
-  const list = Object.keys(roomPeers).map(id => ({ id, name: roomPeers[id]?.name }));
+  const list = Object.keys(roomPeers).map(id => {
+    const info = roomPeers[id];
+    return { id, name: info?.name, media: info?.media };
+  });
   peersListeners[room]?.forEach(cb => {
     try { cb(list); }
      catch (e) 
@@ -44,14 +58,50 @@ export function onPeersChange(room: string, cb: PeersListener) {
   };
 }
 
-const peersByRoom: Record<string, Record<string, { peerConnection: any; name?: string }>> = {};
+const peersByRoom: Record<string, Record<string, PeerEntry>> = {};
 let currentRoom: string | null = null;
 let localMediaStream: MediaStream | null = null;
 let localDisplayName: string | null = null;
 const remoteVideoElements: Record<string, HTMLVideoElement> = {};
 const pendingRemoteStreams: Record<string, MediaStream> = {};
+const observedRemoteTracks = new WeakSet<MediaStreamTrack>();
+const observedRemoteStreams = new WeakSet<MediaStream>();
 
 const buildPeerKey = (room: string, peerId: string) => `${room}_${peerId}`;
+
+const computeMediaState = (stream: MediaStream | null): PeerMediaState => {
+  const audioTracks = stream?.getAudioTracks() ?? [];
+  const videoTracks = stream?.getVideoTracks() ?? [];
+
+  const audio = audioTracks.length
+    ? audioTracks.some(track => track.enabled && !track.muted && track.readyState === "live")
+    : undefined;
+
+  const video = videoTracks.length
+    ? videoTracks.some(track => track.enabled && !track.muted && track.readyState === "live")
+    : false;
+
+  return { audio, video };
+};
+
+function syncLocalMediaState() {
+  if (!currentRoom || !socket?.id) return;
+
+  const roomPeers = (peersByRoom[currentRoom] ||= {});
+  const entry = roomPeers[socket.id] || (roomPeers[socket.id] = { peerConnection: null });
+  if (localDisplayName && !entry.name) {
+    entry.name = localDisplayName;
+  }
+  entry.media = computeMediaState(localMediaStream);
+  emitPeers(currentRoom);
+}
+
+function syncRemoteMediaState(room: string, peerId: string, stream: MediaStream | null) {
+  const roomPeers = (peersByRoom[room] ||= {});
+  const entry = roomPeers[peerId] || (roomPeers[peerId] = { peerConnection: null });
+  entry.media = computeMediaState(stream);
+  emitPeers(room);
+}
 
 const serverWebRTCUrl = import.meta.env.VITE_WEBRTC_URL as string;
 if (!serverWebRTCUrl) {
@@ -117,6 +167,7 @@ export const initWebRTC = async (options?: { audio?: boolean; video?: boolean; r
     if (localDisplayName) {
       socket?.emit("announce", { room: currentRoom, name: localDisplayName });
     }
+    syncLocalMediaState();
   } catch (error) {
     console.error("Failed to initialize WebRTC connection:", error);
     throw error;
@@ -152,13 +203,16 @@ function initSocketConnection() {
     if (!room || !socket) return;
 
     // asure entry in peersByRoom
-    peersByRoom[room] = peersByRoom[room] ?? {};
-    if (socket?.id && !peersByRoom[room][socket.id]) {
-      if (socket?.id) {
-        peersByRoom[room][socket.id] = { peerConnection: null, name: localDisplayName ?? undefined };
-      }
+    const roomPeers = (peersByRoom[room] ||= {});
+    if (socket?.id) {
+      const existing = roomPeers[socket.id];
+      roomPeers[socket.id] = {
+        peerConnection: existing?.peerConnection ?? null,
+        name: existing?.name ?? localDisplayName ?? undefined,
+        media: existing?.media,
+      };
+      syncLocalMediaState();
     }
-    emitPeers(room);
 
     // announce our name to room
     if (localDisplayName) {
@@ -203,7 +257,12 @@ function handleIntroduction(otherClientIds: string[]) {
 
   // asure entry for local peer
   if (s.id) {
-    roomPeers[s.id] = roomPeers[s.id] ?? { peerConnection: null, name: localDisplayName };
+    const existing = roomPeers[s.id];
+    roomPeers[s.id] = {
+      peerConnection: existing?.peerConnection ?? null,
+      name: existing?.name ?? localDisplayName ?? undefined,
+      media: existing?.media,
+    };
   }
 
   // create connections as initiator and request identity
@@ -213,7 +272,8 @@ function handleIntroduction(otherClientIds: string[]) {
     if (!roomPeers[theirId]?.peerConnection) {
       roomPeers[theirId] = {
         peerConnection: createPeerConnection(theirId, true),
-        name: roomPeers[theirId]?.name
+        name: roomPeers[theirId]?.name,
+        media: roomPeers[theirId]?.media,
       };
       //createClientMediaElements(room, theirId);
     }
@@ -237,10 +297,14 @@ function handleIntroduction(otherClientIds: string[]) {
 function handleNewUserConnected(theirId: string) {
   if (!socket || !currentRoom) return;
   if (theirId === socket.id) return;
-  const roomPeers = peersByRoom[currentRoom] ?? (peersByRoom[currentRoom] = {});
-  if (!roomPeers[theirId]) {
+  const roomPeers = (peersByRoom[currentRoom] ||= {});
+  const existing = roomPeers[theirId];
+  if (!existing) {
     roomPeers[theirId] = { peerConnection: null };
-   createClientMediaElements(currentRoom!, theirId);
+    createClientMediaElements(currentRoom!, theirId);
+  } else if (!existing.peerConnection) {
+    existing.peerConnection = null;
+    createClientMediaElements(currentRoom!, theirId);
   }
   // request identity for new user and emit updated list
   socket.emit("requestIdentityFor", { room: currentRoom, socketId: theirId });
@@ -283,8 +347,12 @@ function handleSignal(to: string, from: string, data: any) {
     peer.peerConnection.signal(data);
   } else {
     const peerConnection = createPeerConnection(from, false);
-    peersByRoom[currentRoom] = peersByRoom[currentRoom] ?? {};
-    peersByRoom[currentRoom][from] = { peerConnection };
+    const existing = roomPeers[from];
+    roomPeers[from] = {
+      peerConnection,
+      name: existing?.name,
+      media: existing?.media,
+    };
     peerConnection.signal(data);
   }
 }
@@ -374,7 +442,8 @@ function createClientMediaElements(room: string, peerId: string) {
 function updateClientMediaElements(peerId: string, stream: MediaStream) {
   // Try to find element by current room scope first
   if (!currentRoom) return;
-  const key = buildPeerKey(currentRoom, peerId);
+  const room = currentRoom;
+  const key = buildPeerKey(room, peerId);
   const registeredEl = remoteVideoElements[key];
   const fallback = registeredEl ?? (document.getElementById(`${key}_video`) as HTMLVideoElement | null);
 
@@ -389,6 +458,25 @@ function updateClientMediaElements(peerId: string, stream: MediaStream) {
   } else {
     pendingRemoteStreams[key] = stream;
   }
+
+  const handleTrackStateChange = () => {
+    syncRemoteMediaState(room, peerId, stream);
+  };
+
+  if (!observedRemoteStreams.has(stream)) {
+    stream.addEventListener("removetrack", handleTrackStateChange as EventListener);
+    observedRemoteStreams.add(stream);
+  }
+
+  stream.getTracks().forEach(track => {
+    if (observedRemoteTracks.has(track)) return;
+    track.addEventListener("mute", handleTrackStateChange);
+    track.addEventListener("unmute", handleTrackStateChange);
+    track.addEventListener("ended", handleTrackStateChange);
+    observedRemoteTracks.add(track);
+  });
+
+  syncRemoteMediaState(room, peerId, stream);
 }
 
 function removeClientMediaElements(room: string, peerId: string) {
@@ -457,6 +545,7 @@ export function attachLocalVideoElement(el: HTMLMediaElement | null) {
 export function toggleAudio(enabled: boolean) {
   if (!localMediaStream) return;
   localMediaStream.getAudioTracks().forEach(t => (t.enabled = enabled));
+  syncLocalMediaState();
 }
 
 /** Toggle video tracks enabled/disabled
@@ -466,6 +555,7 @@ export function toggleAudio(enabled: boolean) {
 export function toggleVideo(enabled: boolean) {
   if (!localMediaStream) return;
   localMediaStream.getVideoTracks().forEach(t => (t.enabled = enabled));
+  syncLocalMediaState();
 }
 
 /** Leave a room and clean up resources

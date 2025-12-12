@@ -130,12 +130,19 @@ const IntoMeeting: React.FC = () => {
       const localId = getLocalSocketId();
       if (localId && !localSocketId) setLocalSocketId(localId);
 
-      const mapped: MeetParticipant[] = list.map(p => ({
-        id: p.id,
-        name: p.id === (localId ?? localSocketId) ? (displayName ?? p.name ?? p.id) : (p.name ?? p.id),
-        micEnabled: true,
-        videoEnabled: true
-      }));
+      const mapped: MeetParticipant[] = list.map(p => {
+        const isLocalPeer = p.id === (localId ?? localSocketId);
+        const display = isLocalPeer ? (displayName ?? p.name ?? p.id) : (p.name ?? p.id);
+        const audioState = p.media?.audio;
+        const videoState = p.media?.video;
+
+        return {
+          id: p.id,
+          name: display,
+          micEnabled: audioState,
+          videoEnabled: videoState ?? true,
+        };
+      });
 
       const me = localId ?? localSocketId;
       const ordered = me ? [...mapped].sort((a, b) => (a.id === me ? -1 : b.id === me ? 1 : 0)) : mapped;
