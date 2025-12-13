@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Mic, MicOff, PhoneOff, Video, VideoOff } from "lucide-react";
+import { Mic, MicOff, PhoneOff, Video, VideoOff, Cast } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ChatPanel } from "@/components/meet/ChatCard";
 import "./IntoMeeting.scss";
@@ -11,11 +11,15 @@ import {
   toggleVideo,
   stopLocalStream,
   leaveRoom,
-  getLocalSocketId,
-  onPeersChange
+  onPeersChange,
+  startScreenShare,
+  stopScreenShare,
+  isScreenSharing,
+  onScreenshareChange,
+  getLocalSocketId
 } from "@/service/webrtc/webrtc";
 
-type ControlId = "mic" | "video" | "hangup";
+type ControlId = "mic" | "video" | "screen" | "hangup";
 
 type ControlButton = {
   id: ControlId;
@@ -35,11 +39,13 @@ const IntoMeeting: React.FC = () => {
 
   const [participants, setParticipants] = useState<MeetParticipant[]>([]);
   const [localSocketId, setLocalSocketId] = useState<string | null>(null);
+  const [screenParticipants, setScreenParticipants] = useState<MeetParticipant[]>([]);
 
   // states for join / device availability
   const [joined, setJoined] = useState(false);
   const [micEnabled, setMicEnabled] = useState(false);
   const [videoEnabled, setVideoEnabled] = useState(false);
+  const [screenEnabled, setScreenEnabled] = useState(false);
   const [hasCamera, setHasCamera] = useState<boolean | null>(null);
   const [hasMic, setHasMic] = useState<boolean | null>(null);
 
@@ -153,6 +159,60 @@ const IntoMeeting: React.FC = () => {
     };
   }, [meetingId, displayName]);
 
+  // Listen to screenshare events to add/remove screen cards
+  useEffect(() => {
+    const unsub = onScreenshareChange(({ peerId, active, stream }) => {
+      const screenId = `${peerId}:screen`;
+      
+      if (active) {
+        // Find the base participant to get their name
+        const baseParticipant = participants.find(p => p.id === peerId);
+        const isLocal = peerId === (localSocketId ?? getLocalSocketId() ?? "");
+        const name = isLocal 
+          ? (displayName ?? "Yo") 
+          : (baseParticipant?.name ?? peerId);
+
+        setScreenParticipants(prev => {
+          // Avoid duplicates
+          if (prev.some(p => p.id === screenId)) return prev;
+          return [...prev, { 
+            id: screenId, 
+            name: `${name} (pantalla)`, 
+            micEnabled: false, 
+            videoEnabled: true 
+          }];
+        });
+
+        // Bind the stream to video element if available
+        if (meetingId && stream) {
+          setTimeout(() => {
+            const videoEl = document.getElementById(`${meetingId}_${screenId}_video`) as HTMLVideoElement | null;
+            if (videoEl && stream) {
+              videoEl.srcObject = stream;
+              videoEl.autoplay = true;
+              videoEl.playsInline = true;
+              videoEl.play().catch(() => {});
+              videoEl.setAttribute("data-has-stream", "true");
+            }
+          }, 100);
+        }
+
+        if (isLocal) setScreenEnabled(true);
+      } else {
+        // Remove screen card
+        setScreenParticipants(prev => prev.filter(p => p.id !== screenId));
+        
+        const isLocal = peerId === (localSocketId ?? getLocalSocketId() ?? "");
+        if (isLocal) setScreenEnabled(false);
+      }
+    });
+
+    return () => {
+      unsub();
+      setScreenParticipants([]);
+    };
+  }, [participants, localSocketId, displayName, meetingId]);
+
   const leaveAll = useCallback(() => {
     stopLocalStream();
     setJoined(false);
@@ -208,6 +268,21 @@ const IntoMeeting: React.FC = () => {
     }
   }, [hasCamera, joined, videoEnabled, hasMic, checkDevices, meetingId]);
 
+  const toggleScreen = async () => {
+    try {
+      if (!screenEnabled) {
+        await startScreenShare();
+        setScreenEnabled(true);
+      } else {
+        stopScreenShare();
+        setScreenEnabled(false);
+      }
+    } catch (e) {
+      console.warn("Screen share toggle failed", e);
+      setScreenEnabled(isScreenSharing());
+    }
+  };
+
   // remove cookies when user closes tab/window
   useEffect(() => {
     const onBeforeUnload = () => {
@@ -234,14 +309,32 @@ const IntoMeeting: React.FC = () => {
     {
       id: "mic",
       enabled: micEnabled,
-      onClick: toggleMicHandler
+      onClick: async () => {
+        await toggleAudio(!micEnabled);
+        setMicEnabled(!micEnabled);
+      },
     },
     {
       id: "video",
       enabled: videoEnabled,
-      onClick: toggleCamHandler
+      onClick: async () => {
+        await toggleVideo(!videoEnabled);
+        setVideoEnabled(!videoEnabled);
+      },
     },
-    { id: "hangup", onClick: handleHangup }
+    {
+      id: "screen",
+      enabled: screenEnabled,
+      onClick: toggleScreen,
+    },
+    {
+      id: "hangup",
+      onClick: async () => {
+        await leaveRoom(meetingId ?? "");
+        stopLocalStream();
+        navigate("/dashboard");
+      },
+    },
   ];
 
   const localParticipant = localSocketId ? participants.find(p => p.id === localSocketId) : undefined;
@@ -251,6 +344,7 @@ const IntoMeeting: React.FC = () => {
     <section className="meeting-screen">
       <div className="meeting-stage">
         <section className="participants-grid">
+          {/* Local camera card */}
           {meetingId && localParticipant && (
             <MeetCard
               key={localParticipant.id}
@@ -262,6 +356,16 @@ const IntoMeeting: React.FC = () => {
             />
           )}
 
+          {/* Screen share cards (local and remote) */}
+          {meetingId && screenParticipants.map(screenParticipant => (
+            <MeetCard
+              key={screenParticipant.id}
+              {...screenParticipant}
+              meetingId={meetingId}
+            />
+          ))}
+
+          {/* Remote participants */}
           {meetingId && remoteParticipants.map(participant => (
             <MeetCard
               key={participant.id}
@@ -281,10 +385,13 @@ const IntoMeeting: React.FC = () => {
                 if (control.id === "video") {
                   return control.enabled ? Video : VideoOff;
                 }
+                if (control.id === "screen") {
+                  return control.enabled ? Cast : Cast;
+                }
                 return PhoneOff;
               })();
 
-              const isMediaControl = control.id === "mic" || control.id === "video";
+              const isMediaControl = control.id === "mic" || control.id === "video" || control.id === "screen";
               const available = control.id === "mic" ? (hasMic !== false) : control.id === "video" ? (hasCamera !== false) : true;
               const isActive = isMediaControl ? control.enabled === true : true;
               const classNames = [
@@ -299,6 +406,7 @@ const IntoMeeting: React.FC = () => {
               const label = (() => {
                 if (control.id === "mic") return hasMic === false ? "No se detecta mic" : !joined ? "Unirse para usar el micrófono" : (control.enabled ? "Silenciar micrófono" : "Activar micrófono");
                 if (control.id === "video") return hasCamera === false ? "No se detecta camara" : !joined ? "Unirse para usar la cámara" : (control.enabled ? "Apagar cámara" : "Encender cámara");
+                if (control.id === "screen") return control.enabled ? "Detener compartir pantalla" : "Compartir pantalla";
                 return "Colgar llamada";
               })();
 
