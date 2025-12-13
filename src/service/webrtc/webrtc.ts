@@ -361,6 +361,11 @@ function createPeerConnection(theirSocketId: string, isInitiator = false) {
    return peer;
 }
 
+/** Create media elements for a given peer in a room
+ * 
+ * @param room 
+ * @param peerId 
+ */
 function createClientMediaElements(room: string, peerId: string) {
   const key = buildPeerKey(room, peerId);
   if (remoteVideoElements[key]) return;
@@ -371,6 +376,11 @@ function createClientMediaElements(room: string, peerId: string) {
   }
 }
 
+/** Update media elements for a given peer with a new stream
+ * 
+ * @param peerId 
+ * @param stream 
+ */
 function updateClientMediaElements(peerId: string, stream: MediaStream) {
   // Try to find element by current room scope first
   if (!currentRoom) return;
@@ -391,6 +401,11 @@ function updateClientMediaElements(peerId: string, stream: MediaStream) {
   }
 }
 
+/** Remove media elements for a given peer in a room
+ * 
+ * @param room 
+ * @param peerId 
+ */
 function removeClientMediaElements(room: string, peerId: string) {
   const key = buildPeerKey(room, peerId);
   const registeredEl = remoteVideoElements[key];
@@ -405,6 +420,12 @@ function removeClientMediaElements(room: string, peerId: string) {
   delete pendingRemoteStreams[key];
 }
 
+/** Bind a remote video element to a given peer in a room
+ * 
+ * @param room
+ * @param peerId
+ * @param element
+ */ 
 export function bindRemoteVideoElement(room: string, peerId: string, element: HTMLVideoElement | null) {
   const key = buildPeerKey(room, peerId);
 
@@ -434,6 +455,10 @@ export function bindRemoteVideoElement(room: string, peerId: string, element: HT
   }
 }
 
+/** Attach local video element to local media stream
+ * 
+ * @param el 
+ */
 export function attachLocalVideoElement(el: HTMLMediaElement | null) {
   if (!el) return;
   if (localMediaStream) {
@@ -527,6 +552,137 @@ export function getPeersInRoom(room: string): { id: string; name?: string }[] {
  */
 export function hasLocalMedia(): boolean {
   return !!localMediaStream && localMediaStream.getTracks().length > 0;
+}
+
+type ScreenshareListener = (payload: { peerId: string; active: boolean; stream?: MediaStream }) => void;
+const screenshareListeners: Set<ScreenshareListener> = new Set();
+
+/** Subscribe to screenshare state changes (per peer) */
+export function onScreenshareChange(cb: ScreenshareListener) {
+  screenshareListeners.add(cb);
+  return () => screenshareListeners.delete(cb);
+}
+
+function emitScreenshare(peerId: string, active: boolean, stream?: MediaStream) {
+  screenshareListeners.forEach(cb => {
+    try { cb({ peerId, active, stream }); } catch (e) { console.warn("screenshare listener error", e); }
+  });
+}
+
+let screenStream: MediaStream | null = null;
+const screenVideoElements: Record<string, HTMLVideoElement> = {};
+
+/**
+ * Start screen sharing:
+ * - Acquires a display media stream
+ * - Creates a separate peer entry for screen with suffix ":screen"
+ * 
+ * @throws Error if screen sharing is not supported or fails
+ */
+export async function startScreenShare(): Promise<void> {
+  if (screenStream) return;
+  if (!navigator.mediaDevices?.getDisplayMedia) {
+    throw new Error("Screen share not supported in this browser");
+  }
+
+  screenStream = await navigator.mediaDevices.getDisplayMedia({
+    video: { frameRate: 30 },
+    audio: false
+  });
+
+  const screenTrack = screenStream.getVideoTracks()[0];
+  if (!screenTrack) {
+    stopScreenShare();
+    throw new Error("No screen video track available");
+  }
+
+  const me = socket?.id ?? "local";
+  const screenId = `${me}:screen`;
+
+  // Send screen stream to all peers via a new addTrack/addStream (don't replace existing camera track)
+  const room = currentRoom;
+  const peers = room ? peersByRoom[room] : {};
+  Object.values(peers).forEach(({ peerConnection }) => {
+    if (!peerConnection) return;
+    try {
+      // simple-peer: addTrack(track, stream) to send additional media without replacing camera
+      peerConnection.addTrack?.(screenTrack, screenStream);
+    } catch (e) {
+      console.warn("Failed to add screen track to peer", e);
+    }
+  });
+
+  // Listen for end of screenshare to auto-stop
+  screenTrack.onended = () => stopScreenShare();
+
+  // Emit event so UI can create a new card
+  emitScreenshare(me, true, screenStream);
+
+  // Bind screen stream to a synthetic video element key
+  if (currentRoom) {
+    const key = buildPeerKey(currentRoom, screenId);
+    const videoEl = document.getElementById(`${key}_video`) as HTMLVideoElement | null;
+    if (videoEl) {
+      screenVideoElements[key] = videoEl;
+      videoEl.srcObject = screenStream;
+      videoEl.autoplay = true;
+      videoEl.playsInline = true;
+      videoEl.play().catch(() => {});
+      videoEl.setAttribute("data-has-stream", "true");
+    }
+  }
+}
+
+/**
+ * Stop screen sharing:
+ * - Stops the screen track
+ * - Removes screen track from all peers (does not affect camera)
+ * - Emits event to remove screen card from UI
+ */
+export function stopScreenShare(): void {
+  if (!screenStream) return;
+
+  try {
+    screenStream.getTracks().forEach(t => t.stop());
+  } catch {}
+
+  const me = socket?.id ?? "local";
+  const screenId = `${me}:screen`;
+
+  // Remove screen track from all peers
+  const room = currentRoom;
+  const peers = room ? peersByRoom[room] : {};
+  const screenTrack = screenStream.getVideoTracks()[0];
+
+  Object.values(peers).forEach(({ peerConnection }) => {
+    if (!peerConnection || !screenTrack) return;
+    try {
+      peerConnection.removeTrack?.(screenTrack, screenStream);
+    } catch (e) {
+      console.warn("Failed to remove screen track from peer", e);
+    }
+  });
+
+  screenStream = null;
+
+  // Clean up video element
+  if (currentRoom) {
+    const key = buildPeerKey(currentRoom, screenId);
+    const videoEl = screenVideoElements[key];
+    if (videoEl) {
+      videoEl.srcObject = null;
+      videoEl.setAttribute("data-has-stream", "false");
+      delete screenVideoElements[key];
+    }
+  }
+
+  // Emit event to remove card from UI
+  emitScreenshare(me, false);
+}
+
+/** Helper to know if we are currently sharing the screen */
+export function isScreenSharing(): boolean {
+  return Boolean(screenStream);
 }
 
 export default {
